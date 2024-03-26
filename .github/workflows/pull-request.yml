@@ -1,0 +1,40 @@
+# This is a pull request workflow. It will run linting and unit tests on the backend-printing directory.
+
+name: Pull Request Workflow
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  pull_request:
+    branches: [ "main" ]
+    types: [ assigned, opened, synchronize, reopened ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        working-directory: backend-printing
+        run: pip install -r requirements.txt
+
+      - name: Lint with pylint and flake8
+        working-directory: backend-printing
+        run: pylint --fail-on=E --fail-under=9 --disable=I,R,W,C $(git ls-files '*.py') --rcfile=./.pylintrc
+
+      - name: Run unit tests
+        working-directory: backend-printing
+        run: pytest ./tests
