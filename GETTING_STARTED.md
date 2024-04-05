@@ -81,19 +81,19 @@ The workload plane is where the action happens. It’s all about processing thos
 
 ```powershell
 $Env:CONTROL_PLANE_ENVIRONMENT_CODE="CTRL"
-$Env:WORKLOAD_ENVIRONMENT_CODE="PROD"
-$Env:LOCATION="eastus"
+$Env:WORKLOAD_ENVIRONMENT_CODE="TEST"
+$Env:LOCATION=""
+$Env:ENTRA_ID_TENANT_ID = ""
+$Env:AZURE_SUBSCRIPTION_ID = ""
+$Env:SAP_VIRTUAL_NETWORK_ID = ""
+$Env:BGPRINT_SUBNET_ADDRESS_PREFIX = ""
 $Env:ENABLE_LOGGING_ON_FUNCTION_APP = "false"
+$Env:CONTAINER_REGISTRY_NAME = ""
+$Env:HOMEDRIVE = ""
 
-$Env:HOMEDRIVE = "/home/azureuser"
-$Env:ENTRA_ID_TENANT_ID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-$Env:AZURE_SUBSCRIPTION_ID = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
-$Env:SAP_VIRTUAL_NETWORK_ID = "/subscriptions/yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy/resourceGroups/SAP/providers/Microsoft.Network/virtualNetworks/SAP-VNET"
-$Env:BGPRINT_SUBNET_ADDRESS_PREFIX = "0.0.0.0/24"
+$UniqueIdentifier = Read-Host "Please provide an identifier that makes the service principal names unique, for example (MGMT/CTRL)"
 
-$UniqueIdentifier = Read-Host "Please provide an identifier that makes the service principal names unique, for exaple (MGMT/CTRL)"
-
-$confirmation = Read-Host "Do you want to create a new Application registration for Control Plane (needed for the Web Application) y/n?"
+$confirmation = Read-Host "Do you want to create a new Application registration for Control Plane y/n?"
 if ($confirmation -eq 'y') {
     $Env:CONTROL_PLANE_SERVICE_PRINCIPAL_NAME = $UniqueIdentifier + "-SAP-PRINT-APP"
 }

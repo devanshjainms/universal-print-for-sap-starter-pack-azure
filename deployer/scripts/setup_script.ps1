@@ -19,7 +19,7 @@ $Env:CONTAINER_REGISTRY_NAME = ""
 $Env:HOMEDRIVE = ""
 # Home Drive for the azure user. This is the location you see when you are in the Azure Cloud Shell. Example: /home/john
 
-$UniqueIdentifier = Read-Host "Please provide an identifier that makes the service principal names unique, for exaple (MGMT/CTRL)"
+$UniqueIdentifier = Read-Host "Please provide an identifier that makes the service principal names unique, for example (MGMT/CTRL)"
 
 $confirmation = Read-Host "Do you want to create a new Application registration for Control Plane y/n?"
 if ($confirmation -eq 'y') {
@@ -38,7 +38,7 @@ Set-Location -Path $ENV:SAPPRINT_PATH
 
 Get-ChildItem -Path $ENV:SAPPRINT_PATH -Recurse | Remove-Item -Force -Recurse
 
-$scriptUrl = "https://raw.githubusercontent.com/devanshjainms/universal-print-for-sap-starter-pack/experimental/deployer/scripts/install_backend_printing.ps1"
+$scriptUrl = "https://raw.githubusercontent.com/Azure/universal-print-for-sap-starter-pack/main/deployer/scripts/install_backend_printing.ps1"
 $scriptPath = Join-Path -Path $ENV:SAPPRINT_PATH -ChildPath "install_backend_printing.ps1"
 
 Invoke-WebRequest -Uri $scriptUrl -OutFile $scriptPath
