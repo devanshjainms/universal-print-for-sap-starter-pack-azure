@@ -83,13 +83,13 @@ az role assignment create --assignee $ARM_CLIENT_ID --role "User Access Administ
 Set-Location -Path $ENV:SAPPRINT_PATH
 
 # check if the repository exists, if it does, remove it
-if (Test-Path "universal-print-for-sap-starter-pack-azure") {
-  Remove-Item "./universal-print-for-sap-starter-pack-azure" -Recurse -Force
+if (Test-Path "universal-print-for-sap-starter-pack") {
+  Remove-Item "./universal-print-for-sap-starter-pack" -Recurse -Force
 }
 
 # Clone the git repository
 Write-Host "######## Cloning the code repo ########" -ForegroundColor Green
-git clone https://github.com/devanshjainms/universal-print-for-sap-starter-pack-azure.git
+git clone https://github.com/Azure/universal-print-for-sap-starter-pack.git
 Set-Location -Path "./universal-print-for-sap-starter-pack"
 git checkout experimental
 
