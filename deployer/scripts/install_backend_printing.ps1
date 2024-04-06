@@ -91,7 +91,7 @@ if (Test-Path "universal-print-for-sap-starter-pack") {
 Write-Host "######## Cloning the code repo ########" -ForegroundColor Green
 git clone https://github.com/Azure/universal-print-for-sap-starter-pack.git
 Set-Location -Path "./universal-print-for-sap-starter-pack"
-git checkout experimental
+git checkout main
 
 # Create resource group
 az group create --name $CONTROL_PLANE_RESOURCE_GROUP_NAME --location eastus --only-show-errors
