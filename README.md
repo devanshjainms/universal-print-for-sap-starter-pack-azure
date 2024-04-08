@@ -9,7 +9,7 @@ For SAP, we distinguish between:
 1. **Frontend Printing**: End-user-based printing from SAPGUI, web browsers, and web-based SAP front end apps like Fiori. See [this Microsoft Learn page](https://learn.microsoft.com/azure/sap/workloads/universal-print-sap-frontend) for more details. 
 2. **Backend Printing**: the powerhouse behind large-scale, automated print jobs that are triggered by applications, not people. You can effortlessly deploy this solution within your Azure subscription and tailor it to your SAP system using Terraform. Follow [the deployment guide](GETTING_STARTED.md) in this repos to get started.
 
-You are a Microsoft or SAP partner and eager to offer a packaged solution of your own? Feel free to reach out to [us](mailto:martin.pankraz@microsoft.com) for collaboration opportunities.
+You are a Microsoft or SAP partner and eager to offer a packaged solution of your own? Feel free to reach out to [us](mailto:martin.pankraz@microsoft.com,devansh.jain@microsoft.com) for collaboration opportunities.
 
 ## Contributing
 
