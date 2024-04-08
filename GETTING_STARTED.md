@@ -27,9 +27,9 @@ This project is setup with [Terraform](https://www.terraform.io/) for automated 
 > [!NOTE]
 > Consider implementing the SAP Cloud Print Manager to troubleshoot the SAP Print Queue component prior the integration with Universal Print to rule out any SAP internal configuration issues. SAP's Instructions are detailed in the attached PDF of [SAP Note](https://me.sap.com/notes/3420465). Don't forget to disable the Cloud Print Manager afterwards. Otherwise, it competes with your solution in grabbing print items ;-).
 
-## Integration solution design 🏰 
+## Integration solution design 🏰
   
-![319294914-82e771d8-9500-4d62-a1f3-5e0bb8d386c7](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/47444599-729e-4857-8c42-53b71f70ead0)
+![Architecture overview](assets/architecture-overview.png)
 
 ## Configure backend printing solution🛠️
 
@@ -118,7 +118,7 @@ Invoke-WebRequest -Uri $scriptUrl -OutFile $scriptPath
 Invoke-Expression -Command $scriptPath
 ```
 
-3. On the powershell, execute the command using `./setup.ps1` command.
+3. On powershell, execute the command using `./setup.ps1` command.
 
 4. Once the script finishes, you’ll have both the control plane and the backend print worker neatly deployed in your Azure subscription.
 
@@ -184,32 +184,32 @@ Invoke-Expression -Command $scriptPath
 
 Get the printer share id from the [Azure Portal](https://portal.azure.com/?#view/Universal_Print/MainMenuBlade/~/PrinterShares), via [Powershell](https://learn.microsoft.com/universal-print/fundamentals/universal-print-powershell), or the [Graph API](https://learn.microsoft.com/graph/api/print-list-shares?view=graph-rest-1.0&tabs=http). What ever suits you best.
 
-![319534469-46b6b2fe-e425-4ee5-9827-28370ecef6d3](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/52b10055-b14c-475d-af7e-2c2c35e6e05c)
+![Azure Portal section showing the print share id](assets/how-to-get-up-print-share-id.png)
 
 See above a Screenshot from the portal experience to collect the id.
 
-##### Function app paramaters
+##### Function app parameters
 
 | Name  | Description | Type | Example
 | ------------- | ------------- | ------------- | ------------- |
 | sap_environment | SAP landscape environment | string | "PROD" |
 | sap_sid | SAP system identifier | string | "SID" |
-| sap_hostname | Hostname or IP address of Web Dispatcher (recommended) or Primary Application Server with http protocol and port number | string | "http://full.qualified.domainname:8001" |
-| sap_user | SAP User with proper authorization | string | "USERNAME" |  
-| sap_password | Password for the SAP user  | string | "password"
+| sap_hostname | Hostname or IP address of Web Dispatcher (recommended) or Primary Application Server with http protocol and port number | string | "http://fully.qualified.domainname:8001" |
+| sap_user | SAP User with proper authorization | string | "USERNAME" |
+| sap_password | Password for the SAP user  | string | "password" |
 | sap_print_queues | List of print queue name and Universal Printer Share mapping. The printer share ID is on the overview blade of Universal Printer Share on Azure Portal. | list[map] | [{"queue_name":"ZQ1","print_share_id": "12345678-1234-1234-1234-123456789012"}
 
 Add more queues or SAP environments by repeating the configuration steps above.
 
-## Integration Test!
+## Integration Test🧪
 
 The simplest means for an integration test would be printing the ALV screen from transaction SP02. Find the print button and choose your new print queue as Output Device.
 
-![319494055-c9e9798b-bd2a-4b76-9cb2-82c64dd9cff3](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/681fe0b8-4b1e-4d00-a222-446e0fe72da4)
+![Screenshot of SAP ALV test print from SAPGUI](assets/how-to-test-print-sapgui.png)
 
 On S/4HANA Cloud tenants that ship Fiori apps or don’t offer SAPGUI access anymore use the app “Maintain Print Queues” and trigger “Create Test Page”.
 
-![319494243-ba2a4e5e-ed8a-4ef4-9cb4-9eeb8b7d8229](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/2ae164b5-08f6-4e50-b438-fc965dcdec41)
+![Screenshot of test print in SAP Fiori app](assets/how-to-test-print-fiori.png)
 
 ## Ready, Set, Print🚀
 
