@@ -29,7 +29,7 @@ This project is setup with [Terraform](https://www.terraform.io/) for automated 
 
 ## Integration solution design 🏰 
   
-![image](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/82e771d8-9500-4d62-a1f3-5e0bb8d386c7)
+![319294914-82e771d8-9500-4d62-a1f3-5e0bb8d386c7](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/47444599-729e-4857-8c42-53b71f70ead0)
 
 ## Configure backend printing solution🛠️
 
@@ -184,7 +184,7 @@ Invoke-Expression -Command $scriptPath
 
 Get the printer share id from the [Azure Portal](https://portal.azure.com/?#view/Universal_Print/MainMenuBlade/~/PrinterShares), via [Powershell](https://learn.microsoft.com/universal-print/fundamentals/universal-print-powershell), or the [Graph API](https://learn.microsoft.com/graph/api/print-list-shares?view=graph-rest-1.0&tabs=http). What ever suits you best.
 
-![image](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/5108923/46b6b2fe-e425-4ee5-9827-28370ecef6d3)
+![319534469-46b6b2fe-e425-4ee5-9827-28370ecef6d3](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/52b10055-b14c-475d-af7e-2c2c35e6e05c)
 
 See above a Screenshot from the portal experience to collect the id.
 
@@ -205,11 +205,11 @@ Add more queues or SAP environments by repeating the configuration steps above.
 
 The simplest means for an integration test would be printing the ALV screen from transaction SP02. Find the print button and choose your new print queue as Output Device.
 
-![image](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/5108923/c9e9798b-bd2a-4b76-9cb2-82c64dd9cff3)
+![319494055-c9e9798b-bd2a-4b76-9cb2-82c64dd9cff3](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/681fe0b8-4b1e-4d00-a222-446e0fe72da4)
 
 On S/4HANA Cloud tenants that ship Fiori apps or don’t offer SAPGUI access anymore use the app “Maintain Print Queues” and trigger “Create Test Page”.
 
-![image](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/5108923/ba2a4e5e-ed8a-4ef4-9cb4-9eeb8b7d8229)
+![319494243-ba2a4e5e-ed8a-4ef4-9cb4-9eeb8b7d8229](https://github.com/Azure/universal-print-for-sap-starter-pack/assets/86314060/2ae164b5-08f6-4e50-b438-fc965dcdec41)
 
 ## Ready, Set, Print🚀
 
