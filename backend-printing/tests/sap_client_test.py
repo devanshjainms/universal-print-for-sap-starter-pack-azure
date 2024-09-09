@@ -15,7 +15,7 @@ class TestSAPPrintClient(unittest.TestCase):
                 sap_sid="sid",
                 sap_user="user",
                 sap_password="password",
-                sap_hostname="hostname",
+                sap_hostname="https://hostname",
                 sap_print_queues=[queue, queue],
             )
         )
@@ -33,8 +33,8 @@ class TestSAPPrintClient(unittest.TestCase):
             return res
 
         mock_requests_get.return_value = response()
-        repons = self.client.get_print_queues()
-        self.assertEqual(repons, ["queue1", "queue2"])
+        resp = self.client.get_print_queues()
+        self.assertEqual(resp, ["queue1", "queue2"])
 
     @patch("requests.get")
     def test_get_print_items_from_queue(self, mock_requests_get):

@@ -48,7 +48,11 @@ class SAPPrintClient:
         """
         try:
             session = requests.Session()
-            session.mount("https://", HTTPAdapter(max_retries=3))
+            # needs to be updated with better retry logic
+            if self.sap_hostname.startswith("https://"):
+                session.mount("https://", HTTPAdapter(max_retries=3))
+            elif self.sap_hostname.startswith("http://"):
+                session.mount("http://", HTTPAdapter(max_retries=3))
             response_object = requests.get(
                 headers={"Accept": "application/json"},
                 url=url,
