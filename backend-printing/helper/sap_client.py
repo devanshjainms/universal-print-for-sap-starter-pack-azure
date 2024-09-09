@@ -29,12 +29,14 @@ class SAPPrintClient:
             sap_password (string): SAP password for the user
             sap_hostname (string): URL of the ODATA service
             sap_print_queues (list(PrintQueue), optional): List of print queues. Defaults to None.
+            skip_ssl_verification (bool, optional): Boolean whether to skip SSL verification.
         """
         self.sap_sid = sap_system_config.sap_sid
         self.sap_user = sap_system_config.sap_user
         self.sap_password = sap_system_config.sap_password
         self.sap_hostname = sap_system_config.sap_hostname
         self.sap_print_queues = sap_system_config.sap_print_queues
+        self.skip_ssl_verification = sap_system_config.skip_ssl_verification
         self.api_url = BASE_URL % self.sap_hostname
 
     def _call_sap_api(self, url):
@@ -48,11 +50,16 @@ class SAPPrintClient:
         """
         try:
             session = requests.Session()
-            session.mount("https://", HTTPAdapter(max_retries=3))
+            # needs to be updated with better retry logic
+            if self.sap_hostname.startswith("https://"):
+                session.mount("https://", HTTPAdapter(max_retries=3))
+            elif self.sap_hostname.startswith("http://"):
+                session.mount("http://", HTTPAdapter(max_retries=3))
             response_object = requests.get(
                 headers={"Accept": "application/json"},
                 url=url,
                 auth=HTTPBasicAuth(self.sap_user, self.sap_password),
+                verify=not self.skip_ssl_verification,
             )
             response_object.raise_for_status()
             return json.loads(response_object.text)

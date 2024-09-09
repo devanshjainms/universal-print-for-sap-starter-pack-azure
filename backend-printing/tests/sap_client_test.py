@@ -4,7 +4,12 @@ import requests
 import json
 from helper.sap_client import SAPPrintClient
 from helper.models import SAPSystem, PrintQueue
-from tests.constants import QUEUE_RESPONSE, NUMBER_OF_PRINT_ITEMS, PRINT_ITEMS_SAP
+from tests.constants import (
+    QUEUE_RESPONSE,
+    QUEUE_RESPONSE_SKIP_SSL,
+    NUMBER_OF_PRINT_ITEMS,
+    PRINT_ITEMS_SAP,
+)
 
 
 class TestSAPPrintClient(unittest.TestCase):
@@ -15,8 +20,19 @@ class TestSAPPrintClient(unittest.TestCase):
                 sap_sid="sid",
                 sap_user="user",
                 sap_password="password",
-                sap_hostname="hostname",
+                sap_hostname="https://hostname",
                 sap_print_queues=[queue, queue],
+            )
+        )
+
+        self.client_skip_ssl = SAPPrintClient(
+            SAPSystem(
+                sap_sid="sid",
+                sap_user="user",
+                sap_password="password",
+                sap_hostname="https://hostname",
+                sap_print_queues=[queue, queue],
+                skip_ssl_verification=True,
             )
         )
 
@@ -33,8 +49,20 @@ class TestSAPPrintClient(unittest.TestCase):
             return res
 
         mock_requests_get.return_value = response()
-        repons = self.client.get_print_queues()
-        self.assertEqual(repons, ["queue1", "queue2"])
+        resp = self.client.get_print_queues()
+        self.assertEqual(resp, ["queue1", "queue2"])
+
+    @patch("requests.get")
+    def test_get_print_queues_skip_ssl_verification(self, mock_requests_get):
+        def response():
+            res = requests.Response()
+            res.status_code = 200
+            res._content = json.dumps(QUEUE_RESPONSE_SKIP_SSL).encode("utf-8")
+            return res
+
+        mock_requests_get.return_value = response()
+        resp = self.client_skip_ssl.get_print_queues()
+        self.assertEqual(resp, ["queue3", "queue4"])
 
     @patch("requests.get")
     def test_get_print_items_from_queue(self, mock_requests_get):
