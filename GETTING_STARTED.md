@@ -178,7 +178,8 @@ Invoke-Expression -Command $scriptPath
             "queue_name":"ZQ2",
             "print_share_id": "12345678-1234-1234-1234-123456789012"
         }
-    ]
+    ],
+    "skip_ssl_verification": False
 }
 ```
 
@@ -198,6 +199,7 @@ See above a Screenshot from the portal experience to collect the id.
 | sap_user | SAP User with proper authorization | string | "USERNAME" |
 | sap_password | Password for the SAP user  | string | "password" |
 | sap_print_queues | List of print queue name and Universal Printer Share mapping. The printer share ID is on the overview blade of Universal Printer Share on Azure Portal. | list[map] | [{"queue_name":"ZQ1","print_share_id": "12345678-1234-1234-1234-123456789012"}
+| skip_ssl_verification | Choose whether to skip ssl verification, this should be set to True if the SAP system only accepts secured connections. | boolean | True
 
 Add more queues or SAP environments by repeating the configuration steps above.
 

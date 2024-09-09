@@ -75,6 +75,15 @@ QUEUE_RESPONSE = {
     }
 }
 
+QUEUE_RESPONSE_SKIP_SSL = {
+    "d": {
+        "results": [
+            {"Qname": "queue3"},
+            {"Qname": "queue4"},
+        ]
+    }
+}
+
 NUMBER_OF_PRINT_ITEMS = {"d": {"NrOfNewItems": 2}}
 
 PRINT_ITEMS_SAP = {

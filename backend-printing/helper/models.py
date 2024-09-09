@@ -25,6 +25,7 @@ class SAPSystem:
     sap_print_queues: list[PrintQueue] = field(
         default=list, metadata={"required": False}
     )
+    skip_ssl_verification: bool = field(default=False, metadata={"required": False})
 
 
 class PrintItemStatus(Enum):
