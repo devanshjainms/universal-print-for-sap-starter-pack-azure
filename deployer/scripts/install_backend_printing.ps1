@@ -118,19 +118,47 @@ if (-Not (Test-Path -Path $terraform_directory)) {
 
 # Initialize Terraform
 Write-Host "######## Initializing Terraform ########" -ForegroundColor Green
-terraform -chdir="$terraform_directory" init -reconfigure -upgrade -backend-config="key=$terraform_key" -backend-config="account=$envVars.STORAGE_ACCOUNT_NAME" -backend-config="resource_group_name=$envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME" -backend-config="container_name=$envVars.CONTAINER_NAME" -backend-config="tenant_id=$envVars.ENTRA_ID_TENANT_ID" -backend-config="client_id=$envVars.MSI_CLIENT_ID" -backend-config="subscription_id=$envVars.AZURE_SUBSCRIPTION_ID"
+Write-Host "######## Initializing Terraform ########" -ForegroundColor Green
+try {
+    terraform -chdir="$terraform_directory" init -reconfigure -upgrade `
+        -backend-config="key=$terraform_key" `
+        -backend-config="storage_account_name=$envVars.STORAGE_ACCOUNT_NAME" `
+        -backend-config="resource_group_name=$envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME" `
+        -backend-config="container_name=$envVars.CONTAINER_NAME" `
+        -backend-config="tenant_id=$envVars.ENTRA_ID_TENANT_ID" `
+        -backend-config="client_id=$envVars.MSI_CLIENT_ID" `
+        -backend-config="subscription_id=$envVars.AZURE_SUBSCRIPTION_ID"
+} catch {
+    Write-Error "Terraform initialization failed"
+    exit 1
+}
 
 # Refresh Terraform
 Write-Host "######## Refreshing Terraform ########" -ForegroundColor Green
-terraform -chdir="$terraform_directory" refresh
+try {
+    terraform -chdir="$terraform_directory" refresh
+} catch {
+    Write-Error "Terraform refresh failed"
+    exit 1
+}
 
 # Plan Terraform
 Write-Host "######## Planning the Terraform ########" -ForegroundColor Green
-terraform -chdir="$terraform_directory" plan -compact-warnings -json -no-color -parallelism=5
+try {
+    terraform -chdir="$terraform_directory" plan -compact-warnings -json -no-color -parallelism=5
+} catch {
+    Write-Error "Terraform plan failed"
+    exit 1
+}
 
 # Apply Terraform
 Write-Host "######## Applying the Terraform ########" -ForegroundColor Green
-terraform -chdir="$terraform_directory" apply -auto-approve -compact-warnings -json -no-color -parallelism=5
+try {
+    terraform -chdir="$terraform_directory" apply -auto-approve -compact-warnings -json -no-color -parallelism=5
+} catch {
+    Write-Error "Terraform apply failed"
+    exit 1
+}
 
 # If the platform type is aks, then deploy the service on aks platform
 if ($envVars.PLATFORM -eq "aks") {    
