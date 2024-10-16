@@ -120,12 +120,12 @@ if (-Not (Test-Path -Path $terraform_directory)) {
 Write-Host "######## Initializing Terraform ########" -ForegroundColor Green
 
 # Retrieve environment variables
-$storageAccountName = $env:STORAGE_ACCOUNT_NAME
-$resourceGroupName = $env:CONTROL_PLANE_RESOURCE_GROUP_NAME
-$containerName = $env:CONTAINER_NAME
-$tenantId = $env:ENTRA_ID_TENANT_ID
-$clientId = $env:MSI_CLIENT_ID
-$subscriptionId = $env:AZURE_SUBSCRIPTION_ID
+$storageAccountName = $envVars.STORAGE_ACCOUNT_NAME
+$resourceGroupName = $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME
+$containerName = $envVars.CONTAINER_NAME
+$tenantId = $Env:ENTRA_ID_TENANT_ID
+$clientId = $Env:MSI_CLIENT_ID
+$subscriptionId = $Env:AZURE_SUBSCRIPTION_ID
 
 if (-not $storageAccountName -or -not $resourceGroupName -or -not $containerName -or -not $tenantId -or -not $clientId -or -not $subscriptionId) {
   Write-Error "One or more required environment variables are not set."
