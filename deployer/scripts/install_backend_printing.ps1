@@ -15,7 +15,7 @@ $envVars = @{
   CONTAINER_NAME                    = "tfstate"
   ENABLE_LOGGING_ON_PLATFORM        = $Env:ENABLE_LOGGING_ON_PLATFORM
   MSI_CLIENT_ID                     = $Env:MSI_CLIENT_ID
-  PLATFORM                          = "AKS" #AKS of FUNCTIONAPP
+  PLATFORM                          = "aks" #AKS of FUNCTIONAPP
 }
 
 # List of required environment variables
@@ -106,7 +106,7 @@ az storage account create --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP
 az storage account update --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --name $envVars.STORAGE_ACCOUNT_NAME --https-only true --allow-blob-public-access false --only-show-errors
 az storage container create --name $envVars.CONTAINER_NAME --account-name $envVars.STORAGE_ACCOUNT_NAME --only-show-errors
 
-$terraform_key = "$envVars.WORKLOAD_ENVIRONMENT_CODE.terraform.tfstate"
+$terraform_key = "$($envVars.WORKLOAD_ENVIRONMENT_CODE).terraform.tfstate"
 $terraform_directory = "./deployer/terraform"
 
 # Initialize Terraform
