@@ -118,19 +118,19 @@ if (-Not (Test-Path -Path $terraform_directory)) {
 
 # Initialize Terraform
 Write-Host "######## Initializing Terraform ########" -ForegroundColor Green
-terraform -chdir=$terraform_directory init -reconfigure -upgrade -backend-config="key=$terraform_key" -backend-config="account_name=$envVars.STORAGE_ACCOUNT_NAME" -backend-config="resource_group_name=$envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME" -backend-config="container_name=$envVars.CONTAINER_NAME" -backend-config="tenant_id=$envVars.ENTRA_ID_TENANT_ID" -backend-config="client_id=$envVars.MSI_CLIENT_ID" -backend-config="subscription_id=$envVars.AZURE_SUBSCRIPTION_ID"
+terraform -chdir="$terraform_directory" init -reconfigure -upgrade -backend-config="key=$terraform_key" -backend-config="account=$envVars.STORAGE_ACCOUNT_NAME" -backend-config="resource_group_name=$envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME" -backend-config="container_name=$envVars.CONTAINER_NAME" -backend-config="tenant_id=$envVars.ENTRA_ID_TENANT_ID" -backend-config="client_id=$envVars.MSI_CLIENT_ID" -backend-config="subscription_id=$envVars.AZURE_SUBSCRIPTION_ID"
 
 # Refresh Terraform
 Write-Host "######## Refreshing Terraform ########" -ForegroundColor Green
-terraform -chdir=$terraform_directory refresh
+terraform -chdir="$terraform_directory" refresh
 
 # Plan Terraform
 Write-Host "######## Planning the Terraform ########" -ForegroundColor Green
-terraform -chdir=$terraform_directory plan -compact-warnings -json -no-color -parallelism=5
+terraform -chdir="$terraform_directory" plan -compact-warnings -json -no-color -parallelism=5
 
 # Apply Terraform
 Write-Host "######## Applying the Terraform ########" -ForegroundColor Green
-terraform -chdir=$terraform_directory apply -auto-approve -compact-warnings -json -no-color -parallelism=5
+terraform -chdir="$terraform_directory" apply -auto-approve -compact-warnings -json -no-color -parallelism=5
 
 # If the platform type is aks, then deploy the service on aks platform
 if ($envVars.PLATFORM -eq "aks") {    
