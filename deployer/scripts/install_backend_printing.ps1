@@ -15,6 +15,7 @@ $envVars = @{
   CONTAINER_NAME                    = "tfstate"
   ENABLE_LOGGING_ON_PLATFORM        = $Env:ENABLE_LOGGING_ON_PLATFORM
   MSI_CLIENT_ID                     = $Env:MSI_CLIENT_ID
+  PLATFORM                          = "AKS" #AKS of FUNCTIONAPP
 }
 
 # List of required environment variables
@@ -68,6 +69,7 @@ $terraformVars = @{
   TF_VAR_container_image_name       = "bgprinting"
   TF_VAR_control_plane_rg           = $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME
   TF_VAR_enable_logging_on_platform = $envVars.ENABLE_LOGGING_ON_PLATFORM
+  TF_VAR_sap_up_platform            = $envVars.PLATFORM
 }
 
 foreach ($key in $terraformVars.Keys) {
@@ -83,8 +85,8 @@ if (Test-Path "universal-print-for-sap-starter-pack") {
 
 # Clone the git repository
 Write-Host "######## Cloning the code repo ########" -ForegroundColor Green
-git clone https://github.com/Azure/universal-print-for-sap-starter-pack.git
-Set-Location -Path "./universal-print-for-sap-starter-pack"
+git clone https://github.com/devanshjainms/universal-print-for-sap-starter-pack-azure.git
+Set-Location -Path "./universal-print-for-sap-starter-azure-pack"
 git checkout main
 
 # Create resource group
@@ -124,7 +126,7 @@ Write-Host "######## Applying the Terraform ########" -ForegroundColor Green
 terraform -chdir=$terraform_directory apply -auto-approve -compact-warnings -json -no-color -parallelism=5
 
 # If the platform type is aks, then deploy the service on aks platform
-if ($envVars.WORKLOAD_ENVIRONMENT_CODE -eq "AKS") {    
+if ($envVars.PLATFORM -eq "aks") {    
   Write-Host "######## Deploying the service on aks platform ########" -ForegroundColor Green
   
   # Function to get Terraform outputs as a hashtable
