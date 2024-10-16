@@ -8,8 +8,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import RequestException
 from requests.adapters import HTTPAdapter
-from helper.models import SAPSystem
-from helper.constants import (
+from src.helper.models import SAPSystem
+from src.helper.constants import (
     BASE_URL,
     GET_PRINT_QUEUES,
     GET_N_NEXT_PRINT_ITEMS,

@@ -12,7 +12,7 @@ resource "azurerm_service_plan" "app_service_plan" {
 
 resource "azurerm_application_insights" "app_insights" {
     name                = format("%s-%s-appinsights", lower(var.environment), lower(var.location))
-    count               = var.enable_logging_on_function_app ? 1 : 0
+    count               = var.enable_logging_on_platform ? 1 : 0
     location            = azurerm_resource_group.rg.location
     resource_group_name = azurerm_resource_group.rg.name
     application_type    = "web"
@@ -21,6 +21,7 @@ resource "azurerm_application_insights" "app_insights" {
 
 # Import the existing function app
 resource "azurerm_linux_function_app" "function_app" {
+    count                       = var.sap_up_platform == "functionapp" ? 1 : 0
     name                        = format("%s-%s-functionapp", lower(var.environment), lower(var.location))
     location                    = azurerm_resource_group.rg.location
     resource_group_name         = azurerm_resource_group.rg.name
@@ -53,7 +54,7 @@ resource "azurerm_linux_function_app" "function_app" {
         }
     }
     app_settings = {
-        "APPINSIGHTS_INSTRUMENTATIONKEY"                             = var.enable_logging_on_function_app ? "${azurerm_application_insights.app_insights[0].instrumentation_key}" : ""
+        "APPINSIGHTS_INSTRUMENTATIONKEY"                             = var.enable_logging_on_platform ? "${azurerm_application_insights.app_insights[0].instrumentation_key}" : ""
         "AzureWebJobsStorage"                                        = azurerm_storage_account.storage_account.primary_connection_string
         "AzureWebJobsDashboard"                                      = azurerm_storage_account.storage_account.primary_connection_string
         "WEBSITE_LOGGING_LOG_LEVEL"                                  = "Information"

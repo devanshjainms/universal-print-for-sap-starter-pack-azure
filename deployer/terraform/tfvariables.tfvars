@@ -24,3 +24,13 @@ subnet_address_prefixes = ""
 resource_group_tags = {
     "CreatedBy": "SAPonAzureBgPrint",
 }
+
+# The sap_up_platform value is a mandatory field, it defines the platform where the SAP UP solution is deployed
+# Supported values are "aks" and "functionapp"
+sap_up_platform = "aks"
+
+# The aks_service_cidr value is a mandatory field, it is used to control the service CIDR for the AKS cluster
+aks_service_cidr = ""
+
+# The aks_dns_service_ip value is a mandatory field, it is used to control the DNS service IP for the AKS cluster
+aks_dns_service_ip = ""

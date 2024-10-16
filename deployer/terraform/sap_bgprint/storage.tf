@@ -10,7 +10,6 @@ resource "azurerm_storage_account" "storage_account" {
     location                    = azurerm_resource_group.rg.location
     account_tier                = "Standard"
     account_replication_type    = "LRS"
-    enable_https_traffic_only   = true
 }
 
 # Import the existing storage container

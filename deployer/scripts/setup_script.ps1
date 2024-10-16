@@ -1,46 +1,58 @@
-$Env:CONTROL_PLANE_ENVIRONMENT_CODE="CTRL"
-# Control Plane Environment Code is used to create unique names for control plane resources CTRL, MGMT
-$Env:WORKLOAD_ENVIRONMENT_CODE="TEST"
-# Workload Environment Name is used to create unique names for workload resources TEST, DEV, PROD
-$Env:LOCATION=""
-# Location is the Azure region where the resources will be deployed
-$Env:ENTRA_ID_TENANT_ID = ""
-# Azure Tenant ID
-$Env:AZURE_SUBSCRIPTION_ID = ""
-# Azure Subscription ID
-$Env:SAP_VIRTUAL_NETWORK_ID = ""
-# SAP Virtual Network ID where the SAP systems are deployed
-$Env:BGPRINT_SUBNET_ADDRESS_PREFIX = ""
-# Address prefix for the subnet where the backend printing service will be deployed
-$Env:ENABLE_LOGGING_ON_FUNCTION_APP = "false"
-# Enable logging on the Azure Function App
-$Env:CONTAINER_REGISTRY_NAME = ""
-# Azure Container Registry Name
-$Env:HOMEDRIVE = ""
-# Home Drive for the azure user. This is the location you see when you are in the Azure Cloud Shell. Example: /home/john
+param (
+    [string]$ControlPlaneEnvironmentCode = "CTRL",
+    [string]$WorkloadEnvironmentCode = "TEST",
+    [string]$Location = "",
+    [string]$EntraIdTenantId = "",
+    [string]$AzureSubscriptionId = "",
+    [string]$SapVirtualNetworkId = "",
+    [string]$BgprintSubnetAddressPrefix = "",
+    [bool]$EnableLoggingOnPlatform = $false,
+    [string]$ContainerRegistryName = "",
+    [string]$MsiClientId = ""
+)
 
-$UniqueIdentifier = Read-Host "Please provide an identifier that makes the service principal names unique, for example (MGMT/CTRL)"
+Set-StrictMode -Version Latest
 
-$confirmation = Read-Host "Do you want to create a new Application registration for Control Plane y/n?"
-if ($confirmation -eq 'y') {
-    $Env:CONTROL_PLANE_SERVICE_PRINCIPAL_NAME = $UniqueIdentifier + "-SAP-PRINT-APP"
+try {
+    $Env:CONTROL_PLANE_ENVIRONMENT_CODE = $ControlPlaneEnvironmentCode
+    $Env:WORKLOAD_ENVIRONMENT_CODE = $WorkloadEnvironmentCode
+    $Env:LOCATION = $Location
+    $Env:ENTRA_ID_TENANT_ID = $EntraIdTenantId
+    $Env:AZURE_SUBSCRIPTION_ID = $AzureSubscriptionId
+    $Env:SAP_VIRTUAL_NETWORK_ID = $SapVirtualNetworkId
+    $Env:BGPRINT_SUBNET_ADDRESS_PREFIX = $BgprintSubnetAddressPrefix
+    $Env:ENABLE_LOGGING_ON_PLATFORM = $EnableLoggingOnPlatform.ToString()
+    $Env:CONTAINER_REGISTRY_NAME = $ContainerRegistryName
+    $Env:MSI_CLIENT_ID = $MsiClientId
+
+    $Env:SAPPRINT_PATH = Join-Path -Path $HOME -ChildPath "SAP-PRINT"
+    if (-not (Test-Path -Path $Env:SAPPRINT_PATH)) {
+        New-Item -Path $Env:SAPPRINT_PATH -Type Directory | Out-Null
+    }
+
+    Set-Location -Path $Env:SAPPRINT_PATH
+
+    Get-ChildItem -Path $Env:SAPPRINT_PATH -Recurse | Remove-Item -Force -Recurse
+
+    $scriptUrl = "https://raw.githubusercontent.com/Azure/universal-print-for-sap-starter-pack/main/deployer/scripts/install_backend_printing.ps1"
+    $scriptPath = Join-Path -Path $Env:SAPPRINT_PATH -ChildPath "install_backend_printing.ps1"
+
+    Invoke-RestMethod -Uri $scriptUrl -OutFile $scriptPath
+
+    # Set the context to the specified subscription
+    Set-AzContext -SubscriptionId $AzureSubscriptionId
+
+    # Assign Contributor role to the MSI
+    New-AzRoleAssignment -ObjectId $MsiClientId -RoleDefinitionName "Contributor" -Scope "/subscriptions/$AzureSubscriptionId"
+
+    # Assign User Access Administrator role to the MSI
+    New-AzRoleAssignment -ObjectId $MsiClientId -RoleDefinitionName "User Access Administrator" -Scope "/subscriptions/$AzureSubscriptionId"
+
+    Invoke-Expression -Command $scriptPath
+
+    Write-Output "Script executed successfully."
+} catch {
+    Write-Error "An error occurred: $_"
+} finally {
+    Set-StrictMode -Off
 }
-else {
-    $Env:CONTROL_PLANE_SERVICE_PRINCIPAL_NAME = Read-Host "Please provide the Application registration name"
-}
-
-$ENV:SAPPRINT_PATH = Join-Path -Path $Env:HOMEDRIVE -ChildPath "SAP-PRINT"
-if (-not (Test-Path -Path $ENV:SAPPRINT_PATH)) {
-    New-Item -Path $ENV:SAPPRINT_PATH -Type Directory | Out-Null
-}
-
-Set-Location -Path $ENV:SAPPRINT_PATH
-
-Get-ChildItem -Path $ENV:SAPPRINT_PATH -Recurse | Remove-Item -Force -Recurse
-
-$scriptUrl = "https://raw.githubusercontent.com/Azure/universal-print-for-sap-starter-pack/main/deployer/scripts/install_backend_printing.ps1"
-$scriptPath = Join-Path -Path $ENV:SAPPRINT_PATH -ChildPath "install_backend_printing.ps1"
-
-Invoke-WebRequest -Uri $scriptUrl -OutFile $scriptPath
-
-Invoke-Expression -Command $scriptPath

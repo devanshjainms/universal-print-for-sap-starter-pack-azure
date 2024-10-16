@@ -1,90 +1,84 @@
-#!/bin/bash
+# Ensure the script is executed in PowerShell
+if ($PSVersionTable.PSVersion.Major -lt 5) {
+  Write-Host "This script requires PowerShell 5.0 or higher." -ForegroundColor Red
+  exit
+}
 
-$WORKLOAD_ENVIRONMENT_CODE = $Env:WORKLOAD_ENVIRONMENT_CODE
-$ENTRA_ID_TENANT_ID = $Env:ENTRA_ID_TENANT_ID
-$AZURE_SUBSCRIPTION_ID = $Env:AZURE_SUBSCRIPTION_ID
-$CONTROL_PLANE_SERVICE_PRINCIPAL_NAME = $Env:CONTROL_PLANE_SERVICE_PRINCIPAL_NAME
-$CONTROL_PLANE_RESOURCE_GROUP_NAME = $Env:CONTROL_PLANE_ENVIRONMENT_CODE + "-RG"
-$STORAGE_ACCOUNT_NAME = $Env:CONTROL_PLANE_ENVIRONMENT_CODE.ToLower() + "tstatebgprinting"
-$ACR_NAME = $Env:CONTAINER_REGISTRY_NAME
-$CONTAINER_NAME = "tfstate"
-$ENABLE_LOGGING_ON_FUNCTION_APP = $Env:ENABLE_LOGGING_ON_FUNCTION_APP
+# Set environment variables
+$envVars = @{
+  WORKLOAD_ENVIRONMENT_CODE         = $Env:WORKLOAD_ENVIRONMENT_CODE
+  ENTRA_ID_TENANT_ID                = $Env:ENTRA_ID_TENANT_ID
+  AZURE_SUBSCRIPTION_ID             = $Env:AZURE_SUBSCRIPTION_ID
+  CONTROL_PLANE_RESOURCE_GROUP_NAME = "$($Env:CONTROL_PLANE_ENVIRONMENT_CODE)-RG"
+  STORAGE_ACCOUNT_NAME              = "$($Env:CONTROL_PLANE_ENVIRONMENT_CODE.ToLower())tstatebgprinting"
+  ACR_NAME                          = $Env:CONTAINER_REGISTRY_NAME
+  CONTAINER_NAME                    = "tfstate"
+  ENABLE_LOGGING_ON_PLATFORM        = $Env:ENABLE_LOGGING_ON_PLATFORM
+  MSI_CLIENT_ID                     = $Env:MSI_CLIENT_ID
+}
 
-$variables = @("WORKLOAD_ENVIRONMENT_CODE",
+# List of required environment variables
+$requiredVariables = @(
+  "WORKLOAD_ENVIRONMENT_CODE",
   "ENTRA_ID_TENANT_ID",
   "AZURE_SUBSCRIPTION_ID",
-  "CONTROL_PLANE_SERVICE_PRINCIPAL_NAME",
   "CONTROL_PLANE_RESOURCE_GROUP_NAME",
   "STORAGE_ACCOUNT_NAME",
   "CONTAINER_NAME",
   "ACR_NAME",
-  "ENABLE_LOGGING_ON_FUNCTION_APP")
+  "ENABLE_LOGGING_ON_PLATFORM"
+)
 
-foreach ($var in $variables) {
-  if ([string]::IsNullOrEmpty((Get-Variable -Name $var).Value)) {
+# Check if required environment variables are set
+foreach ($var in $requiredVariables) {
+  if ([string]::IsNullOrEmpty($envVars[$var])) {
     Write-Host "$var is null or empty!" -ForegroundColor Red
+    exit 1
   }
 }
 
-if ($ENTRA_ID_TENANT_ID.Length -eq 0) {
+# Azure login
+if ([string]::IsNullOrEmpty($envVars.ENTRA_ID_TENANT_ID)) {
   az login --output none --only-show-errors
 }
 else {
-  az login --output none --tenant $ENTRA_ID_TENANT_ID --only-show-errors
+  az login --output none --tenant $envVars.ENTRA_ID_TENANT_ID --only-show-errors
 }
 
+# Set Azure CLI configuration
 az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
 
-if ($AZURE_SUBSCRIPTION_ID.Length -eq 0) {
-  Write-Host "$AZURE_SUBSCRIPTION_ID is not set!" -ForegroundColor Red
-  $AZURE_SUBSCRIPTION_ID = Read-Host "Please enter a subscription ID"
+# Set Azure subscription
+if ([string]::IsNullOrEmpty($envVars.AZURE_SUBSCRIPTION_ID)) {
+  Write-Host "AZURE_SUBSCRIPTION_ID is not set!" -ForegroundColor Red
+  $envVars.AZURE_SUBSCRIPTION_ID = Read-Host "Please enter a subscription ID"
+}
+az account set --subscription $envVars.AZURE_SUBSCRIPTION_ID
+
+# Set environment variables for Terraform
+$terraformVars = @{
+  TF_VAR_tenant_id                  = $envVars.ENTRA_ID_TENANT_ID
+  TF_VAR_subscription_id            = $envVars.AZURE_SUBSCRIPTION_ID
+  TF_VAR_client_id                  = $envVars.MSI_CLIENT_ID
+  TF_VAR_location                   = $Env:LOCATION
+  TF_VAR_environment                = $envVars.WORKLOAD_ENVIRONMENT_CODE
+  TF_VAR_virtual_network_id         = $Env:SAP_VIRTUAL_NETWORK_ID
+  TF_VAR_subnet_address_prefixes    = $Env:BGPRINT_SUBNET_ADDRESS_PREFIX
+  TF_VAR_container_registry_url     = "$envVars.ACR_NAME.azurecr.io"
+  TF_VAR_container_image_name       = "bgprinting"
+  TF_VAR_control_plane_rg           = $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME
+  TF_VAR_enable_logging_on_platform = $envVars.ENABLE_LOGGING_ON_PLATFORM
 }
 
-az account set --subscription $AZURE_SUBSCRIPTION_ID
-
-$app_registration = (az ad sp list --all --filter "startswith(displayName,'$CONTROL_PLANE_SERVICE_PRINCIPAL_NAME')" --query "[?displayName=='$CONTROL_PLANE_SERVICE_PRINCIPAL_NAME'].displayName | [0]" --only-show-errors)
-
-$scopes = "/subscriptions/$AZURE_SUBSCRIPTION_ID"
-
-if ($app_registration.Length -gt 0) {
-  Write-Host "Found an existing Service Principal:" $CONTROL_PLANE_SERVICE_PRINCIPAL_NAME
-  $ExistingData = (az ad sp list --all --filter "startswith(displayName,'$CONTROL_PLANE_SERVICE_PRINCIPAL_NAME')" --query  "[?displayName=='$CONTROL_PLANE_SERVICE_PRINCIPAL_NAME']| [0]" --only-show-errors) | ConvertFrom-Json
-
-  $ARM_CLIENT_ID = $ExistingData.appId
-  $ARM_OBJECT_ID = $ExistingData.Id
-  $ENTRA_ID_TENANT_ID = $ExistingData.appOwnerOrganizationId
-
-  $confirmation = Read-Host "Reset the Service Principal password y/n?"
-  if ($confirmation -eq 'y') {
-
-    $ARM_CLIENT_SECRET = (az ad sp credential reset --id $ARM_CLIENT_ID --append --query "password" --out tsv --only-show-errors).Replace("""", "")
-  }
-  else {
-    $ARM_CLIENT_SECRET = Read-Host "Please enter the Service Principal password"
-  }
-
+foreach ($key in $terraformVars.Keys) {
+  Set-Item -Path "Env:$key" -Value $terraformVars[$key]
 }
-else {
-  Write-Host "Creating the Service Principal" $CONTROL_PLANE_SERVICE_PRINCIPAL_NAME -ForegroundColor Green
-  $SPN_DATA = (az ad sp create-for-rbac --role "Contributor" --scopes $scopes --name $CONTROL_PLANE_SERVICE_PRINCIPAL_NAME --only-show-errors) | ConvertFrom-Json
+# Change directory to the SAP print path
+Set-Location -Path $Env:SAPPRINT_PATH
 
-  $ARM_CLIENT_SECRET = $SPN_DATA.password
-  $ExistingData = (az ad sp list --all --filter "startswith(displayName,'$CONTROL_PLANE_SERVICE_PRINCIPAL_NAME')" --query  "[?displayName=='$CONTROL_PLANE_SERVICE_PRINCIPAL_NAME'] | [0]" --only-show-errors) | ConvertFrom-Json
-  $ARM_CLIENT_ID = $ExistingData.appId
-  $ENTRA_ID_TENANT_ID = $ExistingData.appOwnerOrganizationId
-  $ARM_OBJECT_ID = $ExistingData.Id
-}
-Write-Host "Service Principal Name:" $CONTROL_PLANE_SERVICE_PRINCIPAL_NAME
-
-# Assign the Service Principal to the User Access Administrator role
-az role assignment create --assignee $ARM_CLIENT_ID --role "Contributor" --subscription $AZURE_SUBSCRIPTION_ID --scope /subscriptions/$AZURE_SUBSCRIPTION_ID --output none
-az role assignment create --assignee $ARM_CLIENT_ID --role "User Access Administrator" --subscription $AZURE_SUBSCRIPTION_ID --scope /subscriptions/$AZURE_SUBSCRIPTION_ID --output none
-
-Set-Location -Path $ENV:SAPPRINT_PATH
-
-# check if the repository exists, if it does, remove it
+# Remove existing repository if it exists
 if (Test-Path "universal-print-for-sap-starter-pack") {
-  Remove-Item "./universal-print-for-sap-starter-pack" -Recurse -Force
+  Remove-Item -Recurse -Force "universal-print-for-sap-starter-pack"
 }
 
 # Clone the git repository
@@ -94,51 +88,66 @@ Set-Location -Path "./universal-print-for-sap-starter-pack"
 git checkout main
 
 # Create resource group
-az group create --name $CONTROL_PLANE_RESOURCE_GROUP_NAME --location eastus --only-show-errors
+az group create --name $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --location eastus --only-show-errors
 
 # Create the Azure container registry and build the docker image
 Write-Host "######## Build the docker image and push it to the ACR registry ########" -ForegroundColor Green
-az acr create --name $ACR_NAME --resource-group $CONTROL_PLANE_RESOURCE_GROUP_NAME --sku Basic
+az acr create --name $envVars.ACR_NAME --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --sku Basic
 Start-Sleep -Seconds 10 # Wait for the ACR to be created
-az acr show --name $ACR_NAME --resource-group $CONTROL_PLANE_RESOURCE_GROUP_NAME
-az acr login --name $ACR_NAME --resource-group $CONTROL_PLANE_RESOURCE_GROUP_NAME --expose-token
-az acr build --registry $ACR_NAME --resource-group $CONTROL_PLANE_RESOURCE_GROUP_NAME --image bgprinting:latest --file ./backend-printing/Dockerfile ./backend-printing --no-logs
+az acr show --name $envVars.ACR_NAME --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME
+az acr login --name $envVars.ACR_NAME --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --expose-token
+az acr build --registry $envVars.ACR_NAME --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --image bgprinting:latest --file ./backend-printing/Dockerfile ./backend-printing --no-logs
 
-Write-Host "######## Creating storage account to store the terraform state ########" -ForegroundColor Green
 # Create storage account
-az storage account create --resource-group $CONTROL_PLANE_RESOURCE_GROUP_NAME --name $STORAGE_ACCOUNT_NAME --sku Standard_LRS --encryption-services blob --only-show-errors
-az storage account update --resource-group $CONTROL_PLANE_RESOURCE_GROUP_NAME --name $STORAGE_ACCOUNT_NAME --https-only true --allow-blob-public-access false --only-show-errors
-az storage container create --name $CONTAINER_NAME --account-name $STORAGE_ACCOUNT_NAME --only-show-errors
+Write-Host "######## Creating storage account to store the terraform state ########" -ForegroundColor Green
+az storage account create --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --name $envVars.STORAGE_ACCOUNT_NAME --sku Standard_LRS --encryption-services blob --only-show-errors
+az storage account update --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --name $envVars.STORAGE_ACCOUNT_NAME --https-only true --allow-blob-public-access false --only-show-errors
+az storage container create --name $envVars.CONTAINER_NAME --account-name $envVars.STORAGE_ACCOUNT_NAME --only-show-errors
 
-$Env:TF_VAR_tenant_id = $ENTRA_ID_TENANT_ID
-$Env:TF_VAR_subscription_id = $AZURE_SUBSCRIPTION_ID
-$Env:TF_VAR_client_id = $ARM_CLIENT_ID
-$Env:TF_VAR_client_secret = $ARM_CLIENT_SECRET
-$Env:TF_VAR_object_id = $ARM_OBJECT_ID
-$Env:TF_VAR_location = $Env:LOCATION
-$Env:TF_VAR_environment = $Env:WORKLOAD_ENVIRONMENT_CODE
-$Env:TF_VAR_virtual_network_id = $Env:SAP_VIRTUAL_NETWORK_ID
-$Env:TF_VAR_subnet_address_prefixes = $Env:BGPRINT_SUBNET_ADDRESS_PREFIX
-$Env:TF_VAR_container_registry_url = $ACR_NAME + ".azurecr.io"
-$Env:TF_VAR_container_image_name = "bgprinting"
-$Env:TF_VAR_control_plane_rg = $CONTROL_PLANE_RESOURCE_GROUP_NAME
-$ENV:TF_VAR_enable_logging_on_function_app = $ENABLE_LOGGING_ON_FUNCTION_APP
-
-$terraform_key = $WORKLOAD_ENVIRONMENT_CODE + ".terraform.tfstate"
+$terraform_key = "$envVars.WORKLOAD_ENVIRONMENT_CODE.terraform.tfstate"
 $terraform_directory = "./deployer/terraform"
 
-# Initialize the terraform
+# Initialize Terraform
 Write-Host "######## Initializing Terraform ########" -ForegroundColor Green
-terraform -chdir="$terraform_directory" init -reconfigure -upgrade -backend-config="key=$terraform_key" -backend-config="storage_account_name=$STORAGE_ACCOUNT_NAME"  -backend-config="resource_group_name=$CONTROL_PLANE_RESOURCE_GROUP_NAME"  -backend-config="container_name=$CONTAINER_NAME"  -backend-config="tenant_id=$ENTRA_ID_TENANT_ID" -backend-config="client_id=$ARM_CLIENT_ID" -backend-config="client_secret=$ARM_CLIENT_SECRET" -backend-config="subscription_id=$AZURE_SUBSCRIPTION_ID"
+terraform -chdir=$terraform_directory init -reconfigure -upgrade -backend-config="key=$terraform_key" -backend-config="account_name=$envVars.STORAGE_ACCOUNT_NAME" -backend-config="resource_group_name=$envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME" -backend-config="container_name=$envVars.CONTAINER_NAME" -backend-config="tenant_id=$envVars.ENTRA_ID_TENANT_ID" -backend-config="client_id=$envVars.MSI_CLIENT_ID" -backend-config="subscription_id=$envVars.AZURE_SUBSCRIPTION_ID"
 
-# Refresh the terraform
+# Refresh Terraform
 Write-Host "######## Refreshing Terraform ########" -ForegroundColor Green
-terraform -chdir="$terraform_directory"  refresh
+terraform -chdir=$terraform_directory refresh
 
-# Plan the terraform
+# Plan Terraform
 Write-Host "######## Planning the Terraform ########" -ForegroundColor Green
-terraform -chdir="$terraform_directory" plan -compact-warnings -json -no-color -parallelism=5
+terraform -chdir=$terraform_directory plan -compact-warnings -json -no-color -parallelism=5
 
-# Apply the terraform
+# Apply Terraform
 Write-Host "######## Applying the Terraform ########" -ForegroundColor Green
-terraform -chdir="$terraform_directory" apply -auto-approve -compact-warnings -json -no-color -parallelism=5
+terraform -chdir=$terraform_directory apply -auto-approve -compact-warnings -json -no-color -parallelism=5
+
+# If the platform type is aks, then deploy the service on aks platform
+if ($envVars.WORKLOAD_ENVIRONMENT_CODE -eq "AKS") {    
+  Write-Host "######## Deploying the service on aks platform ########" -ForegroundColor Green
+  
+  # Function to get Terraform outputs as a hashtable
+  function Get-TerraformOutputs {
+    $terraformOutputs = terraform output -json | ConvertFrom-Json
+    $secrets = @{}
+    foreach ($key in $terraformOutputs.PSObject.Properties.Name) {
+      $secrets[$key] = $terraformOutputs.$key.value
+    }
+    return $secrets
+  }
+
+  # Get Terraform outputs
+  $secrets = Get-TerraformOutputs
+
+  # Extract resource group and cluster name from secrets
+  $resourceGroup = $secrets["resource_group_name"]
+  $clusterName = $secrets["aks_cluster_name"]
+
+  # Define other parameters
+  $acrRegistry = "$($envVars.ACR_NAME).azurecr.io"  # Construct the ACR registry URL
+  $imageName = "bgprinting:latest"
+
+  # Call the script with parameters
+  & .\kubernetes_service_deploy.ps1 -resourceGroup $resourceGroup -clusterName $clusterName -secrets $secrets -acrRegistry $acrRegistry -imageName $imageName
+}

@@ -71,7 +71,22 @@ variable "control_plane_rg" {
     type        = string
 }
 
-variable "enable_logging_on_function_app" {
+variable "sap_up_platform" { 
+    description = "The name of the platform on which the SAP UP solution is deployed. Supported values are 'aks' and 'functionapp'"
+    type        = string
+}
+
+variable "aks_service_cidr" {
+    description = "The service CIDR for the AKS cluster"
+    type        = string
+}
+
+variable "aks_dns_service_ip" {
+    description = "The DNS service IP for the AKS cluster"
+    type        = string
+}
+
+variable "enable_logging_on_platform" {
     description = "Enable application insights on the function app"
     type        = bool
     default     = false

@@ -4,8 +4,8 @@ import os
 from uuid import uuid4
 import json
 from azure.storage.queue import QueueMessage
-from helper.azure_client import AzureClient
-from helper.constants import MAX_ITEMS_TO_FETCH, MESSAGE_EXPIRY_TIME
+from src.helper.azure_client import AzureClient
+from src.helper.constants import MAX_ITEMS_TO_FETCH, MESSAGE_EXPIRY_TIME
 
 
 class StorageQueueClient(AzureClient):

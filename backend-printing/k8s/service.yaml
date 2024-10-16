@@ -1,0 +1,18 @@
+# This file is used to create a service for the backend-printing deployment
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-printing
+  labels:
+    app: backend-printing
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: backend-printing
+
+---

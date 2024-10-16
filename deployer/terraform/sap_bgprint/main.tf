@@ -43,42 +43,28 @@ resource "azurerm_role_assignment" "acr" {
     role_definition_name    = "AcrPull"
 }
 
-#create a subnet in the virtual network
-resource "azurerm_subnet" "subnet" {
-    name                        = format("bgprint-subnet")
-    resource_group_name         = split("/", var.virtual_network_id)[4]
-    virtual_network_name        = split("/", var.virtual_network_id)[8]
-    delegation {
-        name                    = "delegation"
-        service_delegation {
-            name                = "Microsoft.Web/serverFarms"
-        }
-    }
-    address_prefixes            = [var.subnet_address_prefixes]
-    service_endpoints           = ["Microsoft.Storage", "Microsoft.KeyVault", "Microsoft.Web"] 
+resource "azurerm_role_assignment" "network" {
+    count                   = var.sap_up_platform == "aks" ? 1 : 0
+    scope                   = azurerm_storage_account.rg.id
+    principal_id            = azurerm_user_assigned_identity.msi.principal_id
+    role_definition_name    = "Network Contributor"
 }
 
-# Import the existing key vault
-resource "azurerm_key_vault" "kv" {
-    name                        = format("%s%s%s", lower(var.environment), lower(var.location), lower("kv"))
-    resource_group_name         = azurerm_resource_group.rg.name
-    location                    = azurerm_resource_group.rg.location
-    enabled_for_disk_encryption = true
-    purge_protection_enabled    = false
-    tenant_id                   = azurerm_user_assigned_identity.msi.tenant_id
-    sku_name                    = "standard"
-    access_policy {
-        tenant_id               = azurerm_user_assigned_identity.msi.tenant_id
-        object_id               = azurerm_user_assigned_identity.msi.principal_id
-        secret_permissions      = [
-            "Get",
-            "List",
-            "Set",
-            "Delete",
-            "Purge"
-        ]
-    }
-    public_network_access_enabled = true
+resource "azurerm_role_assignment" "kubelet_identity_operator" {
+    scope                   = azurerm_user_assigned_identity.msi.id
+    count                   = var.sap_up_platform == "aks" ? 1 : 0
+    principal_id            = azurerm_user_assigned_identity.msi.principal_id
+    role_definition_name    = "Managed Identity Operator"
+}
+
+resource "azurerm_federated_identity_credential" "keyvault_fic" {
+    name                    = "acr-fic"
+    count                   = var.sap_up_platform == "aks" ? 1 : 0
+    resource_group_name     = azurerm_resource_group.rg.name
+    audience                = ["api://AzureADTokenExchange"]
+    issuer                  = azurerm_kubernetes_cluster.aks_cluster.oidc_issuer_url
+    parent_id               = azurerm_user_assigned_identity.msi.id
+    subject                 = "system:serviceaccount:default:bgprint-service-account"
 }
 
 # Azure AD Application Registration for the custom connector

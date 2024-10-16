@@ -2,7 +2,7 @@
 """
 
 import os
-from azure.identity import ManagedIdentityCredential
+from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobClient
 from azure.keyvault.secrets import SecretClient
 from azure.storage.queue import (
@@ -11,14 +11,12 @@ from azure.storage.queue import (
     BinaryBase64EncodePolicy,
 )
 from azure.data.tables import TableServiceClient
-from helper.constants import KEY_VAULT_URL
+from src.helper.constants import KEY_VAULT_URL
 
 
 class AzureClient:
     def __init__(self):
-        self._credential = ManagedIdentityCredential(
-            client_id=os.environ["MSI_CLIENT_ID"]
-        )
+        self._credential = DefaultAzureCredential()
 
         self.storage_queue_client = QueueClient.from_connection_string(
             conn_str=os.environ["STORAGE_ACCESS_KEY"],

@@ -20,5 +20,8 @@ module "sap_bgprint" {
     container_registry_url         = var.container_registry_url
     container_image_name           = var.container_image_name
     control_plane_rg               = var.control_plane_rg
-    enable_logging_on_function_app = var.enable_logging_on_function_app
+    sap_up_platform                = var.sap_up_platform
+    aks_service_cidr               = var.aks_service_cidr
+    aks_dns_service_ip             = var.aks_dns_service_ip
+    enable_logging_on_platform     = var.enable_logging_on_platform
 }

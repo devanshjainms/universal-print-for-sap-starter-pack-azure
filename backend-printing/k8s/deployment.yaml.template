@@ -1,0 +1,39 @@
+# This file is used to deploy the backend-printing service to the Kubernetes cluster.
+# The deployment is a single replica of the backend-printing service.
+# The service is exposed on port 8000.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-printing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-printing
+  template:
+    metadata:
+      labels:
+        app: backend-printing
+    spec:
+      serviceAccountName: bgprint-service-account
+      restartPolicy: Always
+      tolerations:
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+        - name: backend-printing
+          image: ${IMAGE_NAME}
+          imagePullPolicy: Always
+          command:
+            [
+              "uvicorn",
+              "src.httptrigger:app",
+              "--host",
+              "0.0.0.0",
+              "--port",
+              "8000",
+            ]
+          ports:
+            - containerPort: 8000
