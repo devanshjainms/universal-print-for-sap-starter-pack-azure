@@ -87,7 +87,7 @@ if (Test-Path "universal-print-for-sap-starter-pack") {
 Write-Host "######## Cloning the code repo ########" -ForegroundColor Green
 git clone https://github.com/devanshjainms/universal-print-for-sap-starter-pack-azure.git
 Set-Location -Path "./universal-print-for-sap-starter-pack-azure"
-git checkout main
+git checkout kube-test
 
 # Create resource group
 az group create --name $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --location eastus --only-show-errors
