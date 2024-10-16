@@ -127,6 +127,13 @@ $tenantId = $Env:ENTRA_ID_TENANT_ID
 $clientId = $Env:MSI_CLIENT_ID
 $subscriptionId = $Env:AZURE_SUBSCRIPTION_ID
 
+Write-Host "Storage Account Name: $storageAccountName"
+Write-Host "Resource Group Name: $resourceGroupName"
+Write-Host "Container Name: $containerName"
+Write-Host "Tenant ID: $tenantId"
+Write-Host "Client ID: $clientId"
+Write-Host "Subscription ID: $subscriptionId"
+
 if (-not $storageAccountName -or -not $resourceGroupName -or -not $containerName -or -not $tenantId -or -not $clientId -or -not $subscriptionId) {
   Write-Error "One or more required environment variables are not set."
   exit 1
