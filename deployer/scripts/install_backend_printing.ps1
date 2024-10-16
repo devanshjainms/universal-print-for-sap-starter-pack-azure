@@ -108,6 +108,13 @@ az storage container create --name $envVars.CONTAINER_NAME --account-name $envVa
 
 $terraform_key = "$($envVars.WORKLOAD_ENVIRONMENT_CODE).terraform.tfstate"
 $terraform_directory = "./deployer/terraform"
+Write-Host "Terraform directory: $terraform_directory"
+
+# Check if the Terraform directory exists
+if (-Not (Test-Path -Path $terraform_directory)) {
+    Write-Error "Terraform directory does not exist: $terraform_directory"
+    exit 1
+}
 
 # Initialize Terraform
 Write-Host "######## Initializing Terraform ########" -ForegroundColor Green
@@ -141,6 +148,12 @@ if ($envVars.PLATFORM -eq "aks") {
 
   # Get Terraform outputs
   $secrets = Get-TerraformOutputs
+
+  # Check if required secrets are available
+  if (-Not $secrets.ContainsKey("resource_group_name") -or -Not $secrets.ContainsKey("aks_cluster_name")) {
+    Write-Error "Required Terraform outputs are missing: resource_group_name or aks_cluster_name"
+    exit 1
+  }
 
   # Extract resource group and cluster name from secrets
   $resourceGroup = $secrets["resource_group_name"]
