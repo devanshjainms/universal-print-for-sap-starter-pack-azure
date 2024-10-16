@@ -39,12 +39,12 @@ foreach ($var in $requiredVariables) {
 }
 
 # Azure login
-if ([string]::IsNullOrEmpty($envVars.ENTRA_ID_TENANT_ID)) {
-  az login --output none --only-show-errors
-}
-else {
-  az login --output none --tenant $envVars.ENTRA_ID_TENANT_ID --only-show-errors
-}
+# if ([string]::IsNullOrEmpty($envVars.ENTRA_ID_TENANT_ID)) {
+#   az login --output none --only-show-errors
+# }
+# else {
+#   az login --output none --tenant $envVars.ENTRA_ID_TENANT_ID --only-show-errors
+# }
 
 # Set Azure CLI configuration
 az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
