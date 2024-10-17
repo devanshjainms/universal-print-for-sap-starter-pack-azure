@@ -2,12 +2,21 @@
 # The k8s service configurations are defined in the ./backend-printing/k8s directory
 
 param(
-    [string]$resourceGroup = "myResourceGroup",
-    [string]$clusterName = "myCluster",
-    [hashtable]$secrets = @{ "mySecret" = "mySecretValue" },
-    [string]$acrRegistry = "myAcrRegistry.azurecr.io",
-    [string]$imageName = "myImageName"  # Added imageName parameter
+    [string]$resourceGroup,
+    [string]$clusterName,
+    [hashtable]$secrets,
+    [string]$acrRegistry,
+    [string]$imageName
 )
+
+function Push-ImageToAcr {
+    az acr update --name $acrRegistry --public-network-enabled true
+    az acr login --name $acrRegistry
+    docker build -t $imageName .
+    docker tag $imageName $acrRegistry/$imageName
+    docker push $acrRegistry/$imageName
+    az acr update --name $acrRegistry --public-network-enabled false
+}
 
 function Get-AksCredentials {
     Write-Output "Getting AKS credentials..."
@@ -46,6 +55,9 @@ function Add-IstioSidecar {
     az aks command invoke --resource-group $resourceGroup --name $clusterName --command $applyIstioCommand
     Remove-Item -Path $tempFile
 }
+
+Set-Location -Path "./backend-printing/"
+Push-ImageToAcr
 
 Set-Location -Path "./backend-printing/k8s"
 

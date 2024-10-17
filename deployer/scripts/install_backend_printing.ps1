@@ -11,11 +11,12 @@ $envVars = @{
   AZURE_SUBSCRIPTION_ID             = $Env:AZURE_SUBSCRIPTION_ID
   CONTROL_PLANE_RESOURCE_GROUP_NAME = "$($Env:CONTROL_PLANE_ENVIRONMENT_CODE)-RG"
   STORAGE_ACCOUNT_NAME              = "$($Env:CONTROL_PLANE_ENVIRONMENT_CODE.ToLower())tstatebgprinting"
-  ACR_NAME                          = $Env:CONTAINER_REGISTRY_NAME
   CONTAINER_NAME                    = "tfstate"
   ENABLE_LOGGING_ON_PLATFORM        = $Env:ENABLE_LOGGING_ON_PLATFORM
   MSI_CLIENT_ID                     = $Env:MSI_CLIENT_ID
   PLATFORM                          = "aks" #AKS of FUNCTIONAPP
+  AKS_SERVICE_CIDR                  = $Env:AKS_SERVICE_CIDR
+  AKS_DNS_SERVICE_IP                = $Env:AKS_DNS_SERVICE_IP
 }
 
 # List of required environment variables
@@ -26,8 +27,11 @@ $requiredVariables = @(
   "CONTROL_PLANE_RESOURCE_GROUP_NAME",
   "STORAGE_ACCOUNT_NAME",
   "CONTAINER_NAME",
-  "ACR_NAME",
   "ENABLE_LOGGING_ON_PLATFORM"
+  "MSI_CLIENT_ID",
+  "PLATFORM",
+  "AKS_SERVICE_CIDR",
+  "AKS_DNS_SERVICE_IP"
 )
 
 # Check if required environment variables are set
@@ -65,11 +69,11 @@ $terraformVars = @{
   TF_VAR_environment                = $envVars.WORKLOAD_ENVIRONMENT_CODE
   TF_VAR_virtual_network_id         = $Env:SAP_VIRTUAL_NETWORK_ID
   TF_VAR_subnet_address_prefixes    = $Env:BGPRINT_SUBNET_ADDRESS_PREFIX
-  TF_VAR_container_registry_url     = "$envVars.ACR_NAME.azurecr.io"
-  TF_VAR_container_image_name       = "bgprinting"
   TF_VAR_control_plane_rg           = $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME
   TF_VAR_enable_logging_on_platform = $envVars.ENABLE_LOGGING_ON_PLATFORM
   TF_VAR_sap_up_platform            = $envVars.PLATFORM
+  TF_VAR_aks_service_cidr           = $envVars.AKS_SERVICE_CIDR
+  TF_VAR_aks_dns_service_ip         = $envVars.AKS_DNS_SERVICE_IP
 }
 
 foreach ($key in $terraformVars.Keys) {
@@ -91,14 +95,6 @@ git checkout kube-test
 
 # Create resource group
 az group create --name $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --location eastus --only-show-errors
-
-# Create the Azure container registry and build the docker image
-Write-Host "######## Build the docker image and push it to the ACR registry ########" -ForegroundColor Green
-az acr create --name $envVars.ACR_NAME --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --sku Basic
-Start-Sleep -Seconds 10 # Wait for the ACR to be created
-az acr show --name $envVars.ACR_NAME --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME
-az acr login --name $envVars.ACR_NAME --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --expose-token
-az acr build --registry $envVars.ACR_NAME --resource-group $envVars.CONTROL_PLANE_RESOURCE_GROUP_NAME --image bgprinting:latest --file ./backend-printing/Dockerfile ./backend-printing --no-logs
 
 # Create storage account
 Write-Host "######## Creating storage account to store the terraform state ########" -ForegroundColor Green
@@ -212,7 +208,7 @@ if ($envVars.PLATFORM -eq "aks") {
   $clusterName = $secrets["aks_cluster_name"]
 
   # Define other parameters
-  $acrRegistry = "$($envVars.ACR_NAME).azurecr.io"  # Construct the ACR registry URL
+  $acrRegistry = $secrets["acr_registry_url"]
   $imageName = "bgprinting:latest"
 
   # Call the script with parameters

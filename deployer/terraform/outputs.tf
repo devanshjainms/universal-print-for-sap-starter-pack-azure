@@ -52,3 +52,8 @@ output "aks_cluster_name" {
     description = "The name of the AKS cluster"
     value       = module.sap_bgprint.aks_cluster_name
 }
+
+output "acr_registry_url" {
+    description = "The url of the ACR registry"
+    value       = module.sap_bgprint.acr_registry_url
+}
