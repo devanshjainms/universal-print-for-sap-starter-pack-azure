@@ -62,7 +62,7 @@ resource "azurerm_federated_identity_credential" "keyvault_fic" {
     count                   = var.sap_up_platform == "aks" ? 1 : 0
     resource_group_name     = azurerm_resource_group.rg.name
     audience                = ["api://AzureADTokenExchange"]
-    issuer                  = azurerm_kubernetes_cluster.aks_cluster.oidc_issuer_url
+    issuer                  = azurerm_kubernetes_cluster.aks_cluster[0].kubelet_identity.client_id
     parent_id               = azurerm_user_assigned_identity.msi.id
     subject                 = "system:serviceaccount:default:bgprint-service-account"
 }
