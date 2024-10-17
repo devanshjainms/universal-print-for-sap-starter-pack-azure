@@ -16,6 +16,7 @@ output "storage_account_name" {
 output "storage_account_key" {
     description = "The storage account key"
     value       = module.sap_bgprint.storage_account_key
+    sensitive   = true
 }
 
 output "storage_queue_name" {
