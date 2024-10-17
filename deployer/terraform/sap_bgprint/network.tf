@@ -23,18 +23,48 @@ resource "azurerm_private_dns_zone" "acr_dns" {
     resource_group_name         = azurerm_resource_group.rg.name
 }
 
-# Create private endpoint for storage account
-resource "azurerm_private_endpoint" "storage_pe" {
-    name                        = "storage-private-endpoint"
+# Create private endpoint for storage account blob
+resource "azurerm_private_endpoint" "storage_pe_blob" {
+    name                        = "storage-private-endpoint-blob"
     location                    = azurerm_resource_group.rg.location
     resource_group_name         = azurerm_resource_group.rg.name
     subnet_id                   = azurerm_subnet.subnet.id
 
     private_service_connection {
-        name                    = "storage-psc"
+        name                    = "storage-psc-blob"
         private_connection_resource_id = azurerm_storage_account.storage_account.id
         is_manual_connection    = false
-        subresource_names       = ["blob", "queue", "table"]
+        subresource_names       = ["blob"]
+    }
+}
+
+# Create private endpoint for storage account queue
+resource "azurerm_private_endpoint" "storage_pe_queue" {
+    name                        = "storage-private-endpoint-queue"
+    location                    = azurerm_resource_group.rg.location
+    resource_group_name         = azurerm_resource_group.rg.name
+    subnet_id                   = azurerm_subnet.subnet.id
+
+    private_service_connection {
+        name                    = "storage-psc-queue"
+        private_connection_resource_id = azurerm_storage_account.storage_account.id
+        is_manual_connection    = false
+        subresource_names       = ["queue"]
+    }
+}
+
+# Create private endpoint for storage account table
+resource "azurerm_private_endpoint" "storage_pe_table" {
+    name                        = "storage-private-endpoint-table"
+    location                    = azurerm_resource_group.rg.location
+    resource_group_name         = azurerm_resource_group.rg.name
+    subnet_id                   = azurerm_subnet.subnet.id
+
+    private_service_connection {
+        name                    = "storage-psc-table"
+        private_connection_resource_id = azurerm_storage_account.storage_account.id
+        is_manual_connection    = false
+        subresource_names       = ["table"]
     }
 }
 
