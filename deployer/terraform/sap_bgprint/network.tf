@@ -6,6 +6,20 @@ resource "azurerm_subnet" "subnet" {
     address_prefixes            = [var.subnet_address_prefixes]
 }
 
+# Define the route table
+resource "azurerm_route_table" "route_table" {
+    name                = "aks-route-table"
+    location            = azurerm_resource_group.rg.location
+    resource_group_name = azurerm_resource_group.rg.name
+}
+
+# Associate the route table with the subnet
+resource "azurerm_subnet_route_table_association" "subnet_association" {
+    subnet_id      = azurerm_subnet.subnet.id
+    route_table_id = azurerm_route_table.route_table.id
+}
+
+
 # Add private DNS zone for storage account
 resource "azurerm_private_dns_zone" "storage_dns" {
     name                        = "privatelink.blob.core.windows.net"
