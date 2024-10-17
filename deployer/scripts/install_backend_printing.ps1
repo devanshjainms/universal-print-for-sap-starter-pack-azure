@@ -188,8 +188,13 @@ if ($envVars.PLATFORM -eq "aks") {
   function Get-TerraformOutputs {
     $terraformOutputs = terraform output -json | ConvertFrom-Json
     $secrets = @{}
-    foreach ($key in $terraformOutputs.PSObject.Properties.Name) {
-      $secrets[$key] = $terraformOutputs.$key.value
+    if ($terraformOutputs.PSObject.Properties.Name) {
+      foreach ($key in $terraformOutputs.PSObject.Properties.Name) {
+        $secrets[$key] = $terraformOutputs.$key.value
+      }
+    }
+    else {
+      Write-Error "An error occurred: The property 'Name' cannot be found on this object. Verify that the property exists."
     }
     return $secrets
   }
