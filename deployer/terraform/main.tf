@@ -15,8 +15,6 @@ module "sap_bgprint" {
     subnet_address_prefixes        = var.subnet_address_prefixes
     environment                    = var.environment
     resource_group_tags            = var.resource_group_tags
-    container_registry_url         = var.container_registry_url
-    container_image_name           = var.container_image_name
     control_plane_rg               = var.control_plane_rg
     sap_up_platform                = var.sap_up_platform
     aks_service_cidr               = var.aks_service_cidr

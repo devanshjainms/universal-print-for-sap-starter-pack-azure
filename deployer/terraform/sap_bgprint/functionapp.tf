@@ -47,9 +47,9 @@ resource "azurerm_linux_function_app" "function_app" {
         }
         application_stack {
         docker {
-            image_name   = var.container_image_name
+            image_name   = "bgprinting"
             image_tag    = "latest"
-            registry_url = format("https://%s", var.container_registry_url)
+            registry_url = azurerm_container_registry.acr.login_server
         }
         }
     }
@@ -63,7 +63,7 @@ resource "azurerm_linux_function_app" "function_app" {
         "FUNCTIONS_WORKER_RUNTIME"                                   = "python"
         "FUNCTIONS_EXTENSION_VERSION"                                = "~4"
         "WEBSITES_ENABLE_APP_SERVICE_STORAGE"                        = false
-        "DOCKER_REGISTRY_SERVER_URL"                                 = format("https://%s", var.container_registry_url)
+        "DOCKER_REGISTRY_SERVER_URL"                                 = azurerm_container_registry.acr.login_server
         "DOCKER_CUSTOM_IMAGE_NAME"                                   = "bgprinting:latest"
         "DOCKER_REGISTRY_SERVER_USERNAME"                            = null
         "DOCKER_REGISTRY_SERVER_PASSWORD"                            = null

@@ -65,15 +65,6 @@ variable "connector_description" {
     default     = "Microsoft Universal Print connector"
 }
 
-variable container_registry_url {
-    description = "The url of the container registry"
-    type        = string
-}
-
-variable "container_image_name" {
-    description = "The name of the container image"
-    type        = string
-}
 
 variable "control_plane_rg" {
     description = "The name of the control plane resource group"
