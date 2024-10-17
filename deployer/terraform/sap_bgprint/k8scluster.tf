@@ -28,6 +28,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
         service_cidr        = var.aks_service_cidr
         dns_service_ip      = var.aks_dns_service_ip
         load_balancer_sku   = "standard"
+        outbound_type       = "userDefinedRouting"
     }
 
     kubelet_identity {
@@ -39,6 +40,6 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     service_mesh_profile {
         mode                 = "Istio"
         revisions            = ["asm-1-21"]
-        internal_ingress_gateway_enabled = true
+        external_ingress_gateway_enabled = true
     }
 }

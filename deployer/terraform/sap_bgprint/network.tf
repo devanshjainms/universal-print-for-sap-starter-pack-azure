@@ -6,15 +6,21 @@ resource "azurerm_subnet" "subnet" {
     address_prefixes            = [var.subnet_address_prefixes]
 }
 
-resource "azurerm_route_table" "aks_route_table" {
-    name                        = "aks-route-table"
-    location                    = azurerm_resource_group.rg.location
+# Add private DNS zone for storage account
+resource "azurerm_private_dns_zone" "storage_dns" {
+    name                        = "privatelink.blob.core.windows.net"
     resource_group_name         = azurerm_resource_group.rg.name
 }
 
-resource "azurerm_subnet_route_table_association" "aks_subnet_route_table_association" {
-    subnet_id                   = azurerm_subnet.subnet.id
-    route_table_id              = azurerm_route_table.aks_route_table.id
+# Add private DNS zone for key vault
+resource "azurerm_private_dns_zone" "keyvault_dns" {
+    name                        = "privatelink.vaultcore.azure.net"
+    resource_group_name         = azurerm_resource_group.rg.name
+}
+
+resource "azurerm_private_dns_zone" "acr_dns" {
+    name                        = "privatelink.azurecr.io"
+    resource_group_name         = azurerm_resource_group.rg.name
 }
 
 # Create private endpoint for storage account
@@ -47,16 +53,19 @@ resource "azurerm_private_endpoint" "keyvault_pe" {
     }
 }
 
-# Add private DNS zone for storage account
-resource "azurerm_private_dns_zone" "storage_dns" {
-    name                        = "privatelink.blob.core.windows.net"
+#create private endpoint for acr
+resource "azurerm_private_endpoint" "acr_pe" {
+    name                        = "acr-private-endpoint"
+    location                    = azurerm_resource_group.rg.location
     resource_group_name         = azurerm_resource_group.rg.name
-}
+    subnet_id                   = azurerm_subnet.subnet.id
 
-# Add private DNS zone for key vault
-resource "azurerm_private_dns_zone" "keyvault_dns" {
-    name                        = "privatelink.vaultcore.azure.net"
-    resource_group_name         = azurerm_resource_group.rg.name
+    private_service_connection {
+        name                           = "acr-psc"
+        private_connection_resource_id = azurerm_container_registry.acr.id
+        is_manual_connection           = false
+        subresource_names              = ["registry"]
+    }
 }
 
 # Link private DNS zone to virtual network for storage account
@@ -72,5 +81,13 @@ resource "azurerm_private_dns_zone_virtual_network_link" "keyvault_dns_link" {
     name                        = "keyvault-dns-link"
     resource_group_name         = azurerm_resource_group.rg.name
     private_dns_zone_name       = azurerm_private_dns_zone.keyvault_dns.name
+    virtual_network_id          = var.virtual_network_id
+}
+
+# Link private DNS zone to virtual network for acr
+resource "azurerm_private_dns_zone_virtual_network_link" "acr_dns_link" {
+    name                        = "acr-dns-link"
+    resource_group_name         = azurerm_resource_group.rg.name
+    private_dns_zone_name       = azurerm_private_dns_zone.acr_dns.name
     virtual_network_id          = var.virtual_network_id
 }

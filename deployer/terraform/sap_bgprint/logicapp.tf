@@ -127,7 +127,7 @@ resource "azurerm_logic_app_action_custom" "logic_app_action_create_upload_sessi
                                 "upload_url": "@{body('CreateUploadSessionForPrinterShare')?['uploadUrl']}"
                             },
                             "function": {
-                                "id": "${azurerm_linux_function_app.function_app.id}/functions/uploaddocumenttoup"
+                                "id": "localhost:8000/uploaddocumenttoup"
                             },
                             "headers": {
                                 "Content-Type": "application/json"

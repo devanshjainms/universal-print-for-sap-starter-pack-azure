@@ -36,15 +36,6 @@ variable "client_id" {
     description = "The client id of the Azure account"
     type        = string
 }
-variable "client_secret" {
-    description = "The client secret of the Azure account"
-    type        = string
-}
-
-variable "object_id" {  
-    description = "The object id of the Azure account"
-    type        = string
-}
 
 variable virtual_network_id {
     description = "The id of the virtual network"

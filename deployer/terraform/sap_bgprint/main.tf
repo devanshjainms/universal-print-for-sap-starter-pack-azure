@@ -45,7 +45,7 @@ resource "azurerm_role_assignment" "acr" {
 
 resource "azurerm_role_assignment" "network" {
     count                   = var.sap_up_platform == "aks" ? 1 : 0
-    scope                   = azurerm_storage_account.rg.id
+    scope                   = azurerm_resource_group.rg.id
     principal_id            = azurerm_user_assigned_identity.msi.principal_id
     role_definition_name    = "Network Contributor"
 }
@@ -93,4 +93,32 @@ resource "azuread_application_redirect_uris" "redirect_uri" {
 
 resource "azuread_application_password" "password" {
     application_id = azuread_application_registration.app.id
+}
+
+resource "azurerm_key_vault" "kv" {
+    name                        = format("%s%s%s", lower(var.environment), lower(var.location), lower("kv"))
+    resource_group_name         = azurerm_resource_group.rg.name
+    location                    = azurerm_resource_group.rg.location
+    enabled_for_disk_encryption = true
+    purge_protection_enabled    = false
+    tenant_id                   = azurerm_user_assigned_identity.msi.tenant_id
+    sku_name                    = "standard"
+    access_policy {
+        tenant_id               = azurerm_user_assigned_identity.msi.tenant_id
+        object_id               = azurerm_user_assigned_identity.msi.principal_id
+        secret_permissions      = [
+            "Get",
+            "List",
+            "Set",
+            "Delete",
+            "Purge"
+        ]
+    }
+}
+
+resource "azurerm_container_registry" "acr" {
+    name                = "backendprintregistry"
+    location            = azurerm_resource_group.rg.location
+    resource_group_name = azurerm_resource_group.rg.name
+    sku                 = "Basic"
 }
