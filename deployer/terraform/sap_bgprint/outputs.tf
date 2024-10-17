@@ -50,7 +50,7 @@ output "azure_tenant_id" {
 
 output "aks_cluster_name" {
     description = "The name of the AKS cluster"
-    value       = azurerm_kubernetes_cluster.aks.name
+    value       = azurerm_kubernetes_cluster.aks_cluster.name
 }
 
 output "acr_registry_url" {
