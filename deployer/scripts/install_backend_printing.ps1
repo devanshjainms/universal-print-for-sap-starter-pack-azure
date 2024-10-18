@@ -186,7 +186,12 @@ if ($envVars.PLATFORM -eq "aks") {
   
   # Function to get Terraform outputs as a hashtable
   function Get-TerraformOutputs {
-    $terraformOutputs = terraform output -json | ConvertFrom-Json
+    Write-Host "######## Getting the Terraform outputs ########" -ForegroundColor Green
+
+    $terraformOut = terraform output
+    Write-Host "Terraform output: $terraformOut"
+    $terraformOutputs = $terraformOut | ConvertTo-Json -Depth 10
+    Write-Host "Terraform outputs: $terraformOutputs"
     $secrets = @{}
     if ($terraformOutputs.PSObject.Properties.Name) {
       foreach ($key in $terraformOutputs.PSObject.Properties.Name) {
