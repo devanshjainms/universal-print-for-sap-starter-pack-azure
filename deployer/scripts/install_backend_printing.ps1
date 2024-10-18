@@ -194,7 +194,7 @@ if ($envVars.PLATFORM -eq "aks") {
       }
     }
     else {
-      Write-Error "An error occurred: The property 'Name' cannot be found on this object. Verify that the property exists."
+      Write-Error "An error occurred: The property 'Name' cannot be found on this object. Verify that the property exists. $terraformOutputs"
     }
     return $secrets
   }
