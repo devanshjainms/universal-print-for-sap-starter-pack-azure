@@ -182,15 +182,16 @@ catch {
 
 # If the platform type is aks, then deploy the service on aks platform
 if ($envVars.PLATFORM -eq "aks") {    
-  Write-Host "######## Deploying the service on aks platform ########" -ForegroundColor Green
-  
-  # Function to get Terraform outputs as a hashtable
   function Get-TerraformOutputs {
-    Write-Host "######## Getting the Terraform outputs ########" -ForegroundColor Green
+    # Download the Terraform state file from the storage account
+    Write-Host "######## Downloading the Terraform state file ########" -ForegroundColor Green
+    $stateFilePath = "$terraform_directory/$terraform_key"
+    az storage blob download --account-name $storageAccountName --container-name $containerName --name $terraform_key --file $stateFilePath --only-show-errors
+    
+    Write-Host "######## Parsing the Terraform state file ########" -ForegroundColor Green
+    $stateFileContent = Get-Content -Path $stateFilePath -Raw | ConvertFrom-Json
+    $terraformOutputs = $stateFileContent.outputs
 
-    $terraformOut = terraform output
-    Write-Host "Terraform output: $terraformOut"
-    $terraformOutputs = $terraformOut | ConvertTo-Json -Depth 10
     Write-Host "Terraform outputs: $terraformOutputs"
     $secrets = @{}
     if ($terraformOutputs.PSObject.Properties.Name) {
