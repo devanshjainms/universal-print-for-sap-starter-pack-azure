@@ -91,91 +91,91 @@ resource "azurerm_logic_app_action_custom" "logic_app_action_create_print_job" {
     BODY
 }
 
-resource "azurerm_logic_app_action_custom" "logic_app_action_create_upload_session_for_printer_share" {
-    name                = "CreateUploadSessionForPrinterShareLoop"
-    logic_app_id        = azurerm_logic_app_workflow.logic_app.id
-    body                = <<BODY
-    {
-        "actions": {
-            "CreateUploadSessionForPrinterShare": {
-                "inputs": {
-                    "body": {
-                        "properties": {
-                            "contentType": "@triggerBody()?['document_content_type']",
-                            "documentName": "@triggerBody()?['document_name']",
-                            "size": "@triggerBody()?['document_file_size']"
-                        }
-                    },
-                    "host": {
-                        "connection": {
-                            "name": "@parameters('$connections')['${azurerm_resource_group_template_deployment.apiconnection.name}']['connectionId']"
-                        }
-                    },
-                    "method": "post",
-                    "path": "/v1.0/print/shares/@{encodeURIComponent(triggerBody()?['printer_share_id'])}/jobs/@{encodeURIComponent(body('${azurerm_logic_app_action_custom.logic_app_action_create_print_job.name}')?['id'])}/documents/@{encodeURIComponent(items('CreateUploadSessionForPrinterShareLoop')?['id'])}/createUploadSession"
-                },
-                "runAfter": {},
-                "type": "ApiConnection"
-            },
-            "UploadDocumentToUP": {
-                        "inputs": {
-                            "body": {
-                                "document_blob": "@{triggerBody()?['document_blob']}",
-                                "document_file_size": "@{triggerBody()?['document_file_size']}",
-                                "document_name": "@{triggerBody()?['document_name']}",
-                                "next_expected_range": "@{body('CreateUploadSessionForPrinterShare')?['nextExpectedRanges']}",
-                                "upload_url": "@{body('CreateUploadSessionForPrinterShare')?['uploadUrl']}"
-                            },
-                            "function": {
-                                "id": "localhost:8000/uploaddocumenttoup"
-                            },
-                            "headers": {
-                                "Content-Type": "application/json"
-                            },
-                            "method": "POST"
-                        },
-                        "runAfter": {
-                            "CreateUploadSessionForPrinterShare": [
-                                "Succeeded"
-                            ]
-                        },
-                        "type": "Function"
-                    }
-        },
-        "foreach": "@body('${azurerm_logic_app_action_custom.logic_app_action_create_print_job.name}')?['documents']",
-        "runAfter": {
-            "${azurerm_logic_app_action_custom.logic_app_action_create_print_job.name}": [
-                "Succeeded"
-            ]
-        },
-        "type": "Foreach"
-    }
-    BODY
-}
+# resource "azurerm_logic_app_action_custom" "logic_app_action_create_upload_session_for_printer_share" {
+#     name                = "CreateUploadSessionForPrinterShareLoop"
+#     logic_app_id        = azurerm_logic_app_workflow.logic_app.id
+#     body                = <<BODY
+#     {
+#         "actions": {
+#             "CreateUploadSessionForPrinterShare": {
+#                 "inputs": {
+#                     "body": {
+#                         "properties": {
+#                             "contentType": "@triggerBody()?['document_content_type']",
+#                             "documentName": "@triggerBody()?['document_name']",
+#                             "size": "@triggerBody()?['document_file_size']"
+#                         }
+#                     },
+#                     "host": {
+#                         "connection": {
+#                             "name": "@parameters('$connections')['${azurerm_resource_group_template_deployment.apiconnection.name}']['connectionId']"
+#                         }
+#                     },
+#                     "method": "post",
+#                     "path": "/v1.0/print/shares/@{encodeURIComponent(triggerBody()?['printer_share_id'])}/jobs/@{encodeURIComponent(body('${azurerm_logic_app_action_custom.logic_app_action_create_print_job.name}')?['id'])}/documents/@{encodeURIComponent(items('CreateUploadSessionForPrinterShareLoop')?['id'])}/createUploadSession"
+#                 },
+#                 "runAfter": {},
+#                 "type": "ApiConnection"
+#             },
+#             "UploadDocumentToUP": {
+#                         "inputs": {
+#                             "body": {
+#                                 "document_blob": "@{triggerBody()?['document_blob']}",
+#                                 "document_file_size": "@{triggerBody()?['document_file_size']}",
+#                                 "document_name": "@{triggerBody()?['document_name']}",
+#                                 "next_expected_range": "@{body('CreateUploadSessionForPrinterShare')?['nextExpectedRanges']}",
+#                                 "upload_url": "@{body('CreateUploadSessionForPrinterShare')?['uploadUrl']}"
+#                             },
+#                             "function": {
+#                                 "id": "localhost:8000/uploaddocumenttoup"
+#                             },
+#                             "headers": {
+#                                 "Content-Type": "application/json"
+#                             },
+#                             "method": "POST"
+#                         },
+#                         "runAfter": {
+#                             "CreateUploadSessionForPrinterShare": [
+#                                 "Succeeded"
+#                             ]
+#                         },
+#                         "type": "Function"
+#                     }
+#         },
+#         "foreach": "@body('${azurerm_logic_app_action_custom.logic_app_action_create_print_job.name}')?['documents']",
+#         "runAfter": {
+#             "${azurerm_logic_app_action_custom.logic_app_action_create_print_job.name}": [
+#                 "Succeeded"
+#             ]
+#         },
+#         "type": "Foreach"
+#     }
+#     BODY
+# }
 
-resource "azurerm_logic_app_action_custom" "logic_app_action_start_print_job" {
-    name                = "StartPrintJob"
-    logic_app_id        = azurerm_logic_app_workflow.logic_app.id
-    body                = <<BODY
-    {
-        "inputs": {
-            "headers": {
-                "Content-Type": "application/json"
-            },
-            "host": {
-                "connection": {
-                    "name": "@parameters('$connections')['${azurerm_resource_group_template_deployment.apiconnection.name}']['connectionId']"
-                }
-            },
-            "method": "post",
-            "path": "/v1.0/print/shares/@{encodeURIComponent(triggerBody()?['printer_share_id'])}/jobs/@{encodeURIComponent(body('${azurerm_logic_app_action_custom.logic_app_action_create_print_job.name}')?['id'])}/start"
-        },
-        "runAfter": {
-            "${azurerm_logic_app_action_custom.logic_app_action_create_upload_session_for_printer_share.name}": [
-                "Succeeded"
-            ]
-        },
-        "type": "ApiConnection"
-    }
-    BODY
-}
+# resource "azurerm_logic_app_action_custom" "logic_app_action_start_print_job" {
+#     name                = "StartPrintJob"
+#     logic_app_id        = azurerm_logic_app_workflow.logic_app.id
+#     body                = <<BODY
+#     {
+#         "inputs": {
+#             "headers": {
+#                 "Content-Type": "application/json"
+#             },
+#             "host": {
+#                 "connection": {
+#                     "name": "@parameters('$connections')['${azurerm_resource_group_template_deployment.apiconnection.name}']['connectionId']"
+#                 }
+#             },
+#             "method": "post",
+#             "path": "/v1.0/print/shares/@{encodeURIComponent(triggerBody()?['printer_share_id'])}/jobs/@{encodeURIComponent(body('${azurerm_logic_app_action_custom.logic_app_action_create_print_job.name}')?['id'])}/start"
+#         },
+#         "runAfter": {
+#             "${azurerm_logic_app_action_custom.logic_app_action_create_upload_session_for_printer_share.name}": [
+#                 "Succeeded"
+#             ]
+#         },
+#         "type": "ApiConnection"
+#     }
+#     BODY
+# }
