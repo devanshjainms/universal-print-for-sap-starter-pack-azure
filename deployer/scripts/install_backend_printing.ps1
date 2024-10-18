@@ -180,48 +180,53 @@ catch {
   exit 1
 }
 
-# If the platform type is aks, then deploy the service on aks platform
 if ($envVars.PLATFORM -eq "aks") {    
   function Get-TerraformOutputs {
-    # Download the Terraform state file from the storage account
-    Write-Host "######## Downloading the Terraform state file ########" -ForegroundColor Green
     $stateFilePath = "$terraform_directory/$terraform_key"
     az storage blob download --account-name $storageAccountName --container-name $containerName --name $terraform_key --file $stateFilePath --only-show-errors
-    
-    Write-Host "######## Parsing the Terraform state file ########" -ForegroundColor Green
-    $stateFileContent = Get-Content -Path $stateFilePath -Raw | ConvertFrom-Json
-    $terraformOutputs = $stateFileContent.outputs
 
-    Write-Host "Terraform outputs: $terraformOutputs"
-    $secrets = @{}
-    if ($terraformOutputs.PSObject.Properties.Name) {
-      foreach ($key in $terraformOutputs.PSObject.Properties.Name) {
-        $secrets[$key] = $terraformOutputs.$key.value
+    $stateFileContent = Get-Content -Path $stateFilePath -Raw | ConvertFrom-Json
+    if (-not $stateFileContent.outputs) {
+      Write-Error "The state file does not contain any outputs."
+      exit 1
+    }
+    $outputs = $stateFileContent.outputs
+
+    $requiredKeys = @(
+      "acr_registry_url",
+      "aks_cluster_name",
+      "azure_tenant_id",
+      "key_vault_name",
+      "logic_app_url",
+      "msi_client_id",
+      "resource_group_name",
+      "storage_account_key",
+      "storage_account_name",
+      "storage_container_name",
+      "storage_queue_name",
+      "storage_table_name"
+    )
+
+    $outputValues = @{}
+
+    foreach ($key in $requiredKeys) {
+      if ($outputs[$key] -and $outputs[$key].value) {
+        $outputValues[$key] = $outputs[$key].value
+      }
+      else {
+        Write-Error "$key is missing."
       }
     }
-    else {
-      Write-Error "An error occurred: The property 'Name' cannot be found on this object. Verify that the property exists. $terraformOutputs"
-    }
-    return $secrets
+    return $outputValues
+
   }
 
-  # Get Terraform outputs
-  $secrets = Get-TerraformOutputs
-
-  # Check if required secrets are available
-  if (-Not $secrets.ContainsKey("resource_group_name") -or -Not $secrets.ContainsKey("aks_cluster_name")) {
-    Write-Error "Required Terraform outputs are missing: resource_group_name or aks_cluster_name"
-    exit 1
-  }
-
-  # Extract resource group and cluster name from secrets
-  $resourceGroup = $secrets["resource_group_name"]
-  $clusterName = $secrets["aks_cluster_name"]
-
-  # Define other parameters
-  $acrRegistry = $secrets["acr_registry_url"]
+  $outputValues = Get-TerraformOutputs
+  $resourceGroup = $outputValues["resource_group_name"]
+  $clusterName = $outputValues["aks_cluster_name"]
+  $acrRegistry = $outputValues["acr_registry_url"]
   $imageName = "bgprinting:latest"
 
   # Call the script with parameters
-  & .\kubernetes_service_deploy.ps1 -resourceGroup $resourceGroup -clusterName $clusterName -secrets $secrets -acrRegistry $acrRegistry -imageName $imageName
+  & .\kubernetes_service_deploy.ps1 -resourceGroup $resourceGroup -clusterName $clusterName -secrets $outputValues -acrRegistry $acrRegistry -imageName $imageName
 }
