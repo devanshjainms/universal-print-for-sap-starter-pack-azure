@@ -28,7 +28,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
         service_cidr        = var.aks_service_cidr
         dns_service_ip      = var.aks_dns_service_ip
         load_balancer_sku   = "standard"
-        outbound_type       = "managedNATGateway"
+        outbound_type       = "userAssignedNATGateway"
     }
 
     kubelet_identity {
