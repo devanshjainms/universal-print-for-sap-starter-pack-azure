@@ -143,23 +143,11 @@ resource "azurerm_private_dns_a_record" "storage_blob_dns_a_record" {
     zone_name                   = azurerm_private_dns_zone.storage_dns.name
     resource_group_name         = azurerm_resource_group.rg.name
     ttl                         = 300
-    records                     = [azurerm_private_endpoint.storage_pe_blob.private_service_connection[0].private_ip_address]
-}
-
-resource "azurerm_private_dns_a_record" "storage_queue_dns_a_record" {
-    name                        = "storage"
-    zone_name                   = azurerm_private_dns_zone.storage_dns.name
-    resource_group_name         = azurerm_resource_group.rg.name
-    ttl                         = 300
-    records                     = [azurerm_private_endpoint.storage_pe_queue.private_service_connection[0].private_ip_address]
-}
-
-resource "azurerm_private_dns_a_record" "storage_table_dns_a_record" {
-    name                        = "storage"
-    zone_name                   = azurerm_private_dns_zone.storage_dns.name
-    resource_group_name         = azurerm_resource_group.rg.name
-    ttl                         = 300
-    records                     = [azurerm_private_endpoint.storage_pe_table.private_service_connection[0].private_ip_address]
+    records                     = [
+        azurerm_private_endpoint.storage_pe_blob.private_service_connection[0].private_ip_address,
+        azurerm_private_endpoint.storage_pe_queue.private_service_connection[0].private_ip_address,
+        azurerm_private_endpoint.storage_pe_table.private_service_connection[0].private_ip_address
+    ]
 }
 
 resource "azurerm_private_dns_a_record" "keyvault_dns_a_record" {
