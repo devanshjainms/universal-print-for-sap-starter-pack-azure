@@ -11,10 +11,6 @@ resource "azurerm_storage_account" "storage_account" {
     account_tier                = "Standard"
     account_replication_type    = "LRS"
     shared_access_key_enabled   = false
-    identity {
-        type                      = "UserAssigned"
-        identity_ids              = [azurerm_user_assigned_identity.msi.id]
-    }
 }
 
 # Import the existing storage container
@@ -28,12 +24,12 @@ resource "azurerm_storage_container" "container" {
 resource "azurerm_storage_table" "table" {
     name                        = "printjobstatus"
     storage_account_name        = azurerm_storage_account.storage_account.name
-    depends_on                  = [ azurerm_storage_account.storage_account ]
+    depends_on                  = [azurerm_storage_account.storage_account]
 }
 
 # Import the existing storage queue
 resource "azurerm_storage_queue" "queue" {
     name                        = "printjobs"
     storage_account_name        = azurerm_storage_account.storage_account.name
-    depends_on                  = [ azurerm_storage_account.storage_account ]
+    depends_on                  = [azurerm_storage_account.storage_account]
 }
