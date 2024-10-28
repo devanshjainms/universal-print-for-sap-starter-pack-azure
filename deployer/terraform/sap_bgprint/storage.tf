@@ -18,18 +18,18 @@ resource "azurerm_storage_container" "container" {
     name                        = var.storage_container_name
     storage_account_name        = azurerm_storage_account.storage_account.name
     container_access_type       = "container"
-    depends_on                  = [ azurerm_storage_account.storage_account ]
+    depends_on                  = [ azurerm_storage_account.storage_account, azurerm_role_assignment.blob ]
 }
 
 resource "azurerm_storage_table" "table" {
     name                        = var.storage_table_name
     storage_account_name        = azurerm_storage_account.storage_account.name
-    depends_on                  = [azurerm_storage_account.storage_account]
+    depends_on                  = [azurerm_storage_account.storage_account, azurerm_role_assignment.table]
 }
 
 # Import the existing storage queue
 resource "azurerm_storage_queue" "queue" {
     name                        = var.storage_queue_name
     storage_account_name        = azurerm_storage_account.storage_account.name
-    depends_on                  = [azurerm_storage_account.storage_account]
+    depends_on                  = [azurerm_storage_account.storage_account, azurerm_role_assignment.queue]
 }
