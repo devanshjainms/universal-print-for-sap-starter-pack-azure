@@ -135,3 +135,36 @@ resource "azurerm_private_dns_zone_virtual_network_link" "acr_dns_link" {
     private_dns_zone_name       = azurerm_private_dns_zone.acr_dns.name
     virtual_network_id          = var.virtual_network_id
 }
+
+#Create a dns a record for the storage account queue, table and container
+resource "azurerm_private_dns_a_record" "storage_blob_dns_a_record" {
+    name                        = "storage"
+    zone_name                   = azurerm_private_dns_zone.storage_dns.name
+    resource_group_name         = azurerm_resource_group.rg.name
+    ttl                         = 300
+    records                     = [azurerm_private_endpoint.storage_pe_blob.private_service_connection[0].private_ip_address]
+}
+
+resource "azurerm_private_dns_a_record" "storage_queue_dns_a_record" {
+    name                        = "storage"
+    zone_name                   = azurerm_private_dns_zone.storage_dns.name
+    resource_group_name         = azurerm_resource_group.rg.name
+    ttl                         = 300
+    records                     = [azurerm_private_endpoint.storage_pe_queue.private_service_connection[0].private_ip_address]
+}
+
+resource "azurerm_private_dns_a_record" "storage_table_dns_a_record" {
+    name                        = "storage"
+    zone_name                   = azurerm_private_dns_zone.storage_dns.name
+    resource_group_name         = azurerm_resource_group.rg.name
+    ttl                         = 300
+    records                     = [azurerm_private_endpoint.storage_pe_table.private_service_connection[0].private_ip_address]
+}
+
+resource "azurerm_private_dns_a_record" "keyvault_dns_a_record" {
+    name                        = "keyvault"
+    zone_name                   = azurerm_private_dns_zone.keyvault_dns.name
+    resource_group_name         = azurerm_resource_group.rg.name
+    ttl                         = 300
+    records                     = [azurerm_private_endpoint.keyvault_pe.private_service_connection[0].private_ip_address]
+}
