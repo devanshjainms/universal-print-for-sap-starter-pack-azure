@@ -169,3 +169,28 @@ resource "azurerm_private_dns_a_record" "keyvault_dns_a_record" {
     ttl                         = 300
     records                     = [azurerm_private_endpoint.keyvault_pe.private_service_connection[0].private_ip_address]
 }
+
+resource "azurerm_public_ip" "nat_gateway_ip" {
+    name                        = "nat-gateway-ip"
+    location                    = azurerm_resource_group.rg.location
+    resource_group_name         = azurerm_resource_group.rg.name
+    allocation_method           = "Static"
+    sku                         = "Standard"
+}
+
+resource "azurerm_nat_gateway" "nat_gateway" {
+    name                        = "outbound-nat-gateway"
+    location                    = azurerm_resource_group.rg.location
+    resource_group_name         = azurerm_resource_group.rg.name
+    sku_name                    = "Standard"
+}
+
+resource "azurerm_nat_gateway_public_ip_association" "nat_gateway_ip_association" {
+    nat_gateway_id              = azurerm_nat_gateway.nat_gateway.id
+    public_ip_address_id        = azurerm_public_ip.nat_gateway_ip.id
+}
+
+resource "azurerm_subnet_nat_gateway_association" "nat_gateway_association" {
+    subnet_id                   = azurerm_subnet.subnet.id
+    nat_gateway_id              = azurerm_nat_gateway.nat_gateway.id
+}
