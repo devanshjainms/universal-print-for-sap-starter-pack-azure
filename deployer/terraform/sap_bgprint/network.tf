@@ -126,6 +126,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "keyvault_dns_link" {
     resource_group_name         = azurerm_resource_group.rg.name
     private_dns_zone_name       = azurerm_private_dns_zone.keyvault_dns.name
     virtual_network_id          = var.virtual_network_id
+    registration_enabled        = false
 }
 
 # Link private DNS zone to virtual network for acr
