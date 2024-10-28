@@ -214,14 +214,14 @@ if ($envVars.PLATFORM -eq "aks") {
         $outputValues[$key] = $outputs[$key].value
       }
       else {
-        Write-Error "$key is missing."
+        Write-Error "An error occurred: $key is missing."
       }
     }
     return $outputValues
-
   }
 
   $outputValues = Get-TerraformOutputs
+  Write-Host "Output values: $outputValues"
   $resourceGroup = $outputValues["resource_group_name"]
   $clusterName = $outputValues["aks_cluster_name"]
   $acrRegistry = $outputValues["acr_registry_url"]
