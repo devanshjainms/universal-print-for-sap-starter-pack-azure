@@ -12,7 +12,6 @@ resource "azurerm_storage_account" "storage_account" {
     account_replication_type    = "LRS"
     shared_access_key_enabled   = false
     min_tls_version             = "TLS1_2"
-    allowed_copy_scope          = false
     network_rules {
         default_action          = "Deny"
         bypass                  = ["AzureServices"]
