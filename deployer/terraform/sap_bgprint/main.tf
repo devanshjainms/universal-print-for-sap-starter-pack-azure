@@ -115,6 +115,11 @@ resource "azurerm_key_vault" "kv" {
             "Purge"
         ]
     }
+    network_acls {
+        bypass                  = "AzureServices"
+        default_action          = "Deny"
+        virtual_network_subnet_ids = [ azurerm_subnet.subnet.id ]
+    }
 }
 
 resource "azurerm_container_registry" "acr" {

@@ -13,6 +13,11 @@ resource "azurerm_storage_account" "storage_account" {
     shared_access_key_enabled   = false
     depends_on                  = [ azurerm_subnet.subnet ]
     public_network_access_enabled = false
+    network_rules {
+        default_action          = "Deny"
+        bypass                  = ["AzureServices", "Logging", "Metrics"]
+        virtual_network_subnet_ids = [ azurerm_subnet.subnet.id ]
+    }
 }
 
 # Import the existing storage container
