@@ -13,12 +13,6 @@ output "storage_account_name" {
     value       = azurerm_storage_account.storage_account.name
 }
 
-output "storage_account_key" {
-    description = "The storage account key"
-    value       = azurerm_storage_account.storage_account.primary_access_key
-    sensitive   = true
-}
-
 output "storage_queue_name" {
     description = "The name of the storage queue"
     value       = azurerm_storage_queue.queue.name

@@ -200,7 +200,6 @@ if ($envVars.PLATFORM -eq "aks") {
       "logic_app_url",
       "msi_client_id",
       "resource_group_name",
-      "storage_account_key",
       "storage_account_name",
       "storage_container_name",
       "storage_queue_name",
