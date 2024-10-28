@@ -15,21 +15,21 @@ resource "azurerm_storage_account" "storage_account" {
 
 # Import the existing storage container
 resource "azurerm_storage_container" "container" {
-    name                        = "printjobs"
+    name                        = var.storage_container_name
     storage_account_name        = azurerm_storage_account.storage_account.name
     container_access_type       = "container"
     depends_on                  = [ azurerm_storage_account.storage_account ]
 }
 
 resource "azurerm_storage_table" "table" {
-    name                        = "printjobstatus"
+    name                        = var.storage_table_name
     storage_account_name        = azurerm_storage_account.storage_account.name
     depends_on                  = [azurerm_storage_account.storage_account]
 }
 
 # Import the existing storage queue
 resource "azurerm_storage_queue" "queue" {
-    name                        = "printjobs"
+    name                        = var.storage_queue_name
     storage_account_name        = azurerm_storage_account.storage_account.name
     depends_on                  = [azurerm_storage_account.storage_account]
 }

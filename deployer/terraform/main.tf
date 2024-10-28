@@ -20,4 +20,7 @@ module "sap_bgprint" {
     aks_service_cidr               = var.aks_service_cidr
     aks_dns_service_ip             = var.aks_dns_service_ip
     enable_logging_on_platform     = var.enable_logging_on_platform
+    storage_container_name         = var.storage_container_name
+    storage_table_name             = var.storage_table_name
+    storage_queue_name             = var.storage_queue_name
 }

@@ -72,3 +72,21 @@ variable "enable_logging_on_platform" {
     type        = bool
     default     = false
 }
+
+variable "storage_queue_name" {
+    description = "The name of the storage queue"
+    type        = string
+    default     = "printjobs"
+}
+
+variable "storage_table_name" {
+    description = "The name of the storage queue"
+    type        = string
+    default     = "printjobstatus"
+}
+
+variable "storage_container_name" {
+    description = "The name of the storage container"
+    type        = string
+    default     = "printjobs"
+}

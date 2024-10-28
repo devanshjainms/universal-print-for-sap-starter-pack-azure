@@ -13,21 +13,6 @@ output "storage_account_name" {
     value       = azurerm_storage_account.storage_account.name
 }
 
-output "storage_queue_name" {
-    description = "The name of the storage queue"
-    value       = azurerm_storage_queue.queue.name
-}
-
-output "storage_container_name" {
-    description = "The name of the storage container"
-    value       = azurerm_storage_container.container.name
-}
-
-output "storage_table_name" {
-    description = "The name of the storage table"
-    value       = azurerm_storage_table.table.name
-}
-
 output "logic_app_url" {
     description = "The url of the logic app"
     value       = azurerm_logic_app_trigger_http_request.logic_app_trigger.callback_url

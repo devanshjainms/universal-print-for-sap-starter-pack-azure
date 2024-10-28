@@ -15,17 +15,17 @@ output "storage_account_name" {
 
 output "storage_queue_name" {
     description = "The name of the storage queue"
-    value       = module.sap_bgprint.storage_queue_name
+    value       = var.storage_queue_name
 }
 
 output "storage_container_name" {
     description = "The name of the storage container"
-    value       = module.sap_bgprint.storage_container_name
+    value       = var.storage_container_name
 }
 
 output "storage_table_name" {
     description = "The name of the storage table"
-    value       = module.sap_bgprint.storage_table_name
+    value       = var.storage_table_name
 }
 
 output "logic_app_url" {
