@@ -4,6 +4,11 @@ resource "azurerm_subnet" "subnet" {
     resource_group_name         = split("/", var.virtual_network_id)[4]
     virtual_network_name        = split("/", var.virtual_network_id)[8]
     address_prefixes            = [var.subnet_address_prefixes]
+    service_endpoints = [
+        "Microsoft.Storage",
+        "Microsoft.KeyVault",
+        "Microsoft.ContainerRegistry",
+    ]
 }
 
 # Define the route table
