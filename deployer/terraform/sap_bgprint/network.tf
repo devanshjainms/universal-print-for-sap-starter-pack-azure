@@ -28,7 +28,7 @@ resource "azurerm_private_dns_zone" "storage_dns" {
 
 # Add private DNS zone for key vault
 resource "azurerm_private_dns_zone" "keyvault_dns" {
-    name                        = "privatelink.vault.core.azure.net"
+    name                        = "privatelink.vaultcore.azure.net"
     resource_group_name         = azurerm_resource_group.rg.name
 }
 
