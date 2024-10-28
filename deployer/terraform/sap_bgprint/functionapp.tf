@@ -27,7 +27,6 @@ resource "azurerm_linux_function_app" "function_app" {
     resource_group_name         = azurerm_resource_group.rg.name
     service_plan_id             = azurerm_service_plan.app_service_plan.id
     storage_account_name        = azurerm_storage_account.storage_account.name
-    storage_account_access_key  = azurerm_storage_account.storage_account.primary_access_key
     functions_extension_version = "~4"
     client_certificate_mode     = "Required"
     virtual_network_subnet_id   = azurerm_subnet.subnet.id
@@ -70,7 +69,6 @@ resource "azurerm_linux_function_app" "function_app" {
         "WEBSITE_NODE_DEFAULT_VERSION"                               = "14"
         "MSI_CLIENT_ID"                                              = azurerm_user_assigned_identity.msi.client_id
         "AZURE_TENANT_ID"                                            = azurerm_user_assigned_identity.msi.tenant_id
-        "STORAGE_ACCESS_KEY"                                         = azurerm_storage_account.storage_account.primary_connection_string
         "STORAGE_QUEUE_NAME"                                         = azurerm_storage_queue.queue.name
         "STORAGE_CONTAINER_NAME"                                     = azurerm_storage_container.container.name
         "LOGIC_APP_URL"                                              = azurerm_logic_app_trigger_http_request.logic_app_trigger.callback_url
