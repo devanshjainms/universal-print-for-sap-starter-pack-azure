@@ -23,12 +23,14 @@ provider "azurerm" {
     use_msi         = true
     client_id       = var.client_id
     tenant_id       = var.tenant_id
+    subscription_id = var.subscription_id
 }
 
 provider "azapi" {
     use_msi         = true
     client_id       = var.client_id
     tenant_id       = var.tenant_id
+    subscription_id = var.subscription_id
 }
 
 provider "azuread" {
