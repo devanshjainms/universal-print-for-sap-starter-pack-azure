@@ -54,8 +54,6 @@ resource "azurerm_linux_function_app" "function_app" {
     }
     app_settings = {
         "APPINSIGHTS_INSTRUMENTATIONKEY"                             = var.enable_logging_on_platform ? "${azurerm_application_insights.app_insights[0].instrumentation_key}" : ""
-        "AzureWebJobsStorage"                                        = azurerm_storage_account.storage_account.primary_connection_string
-        "AzureWebJobsDashboard"                                      = azurerm_storage_account.storage_account.primary_connection_string
         "WEBSITE_LOGGING_LOG_LEVEL"                                  = "Information"
         "AzureFunctionsJobHost__Logging__Console__IsEnabled"         = "true"
         "AzureFunctionsJobHost__Logging__Console__LogLevel__Default" = "Information"
@@ -69,10 +67,10 @@ resource "azurerm_linux_function_app" "function_app" {
         "WEBSITE_NODE_DEFAULT_VERSION"                               = "14"
         "MSI_CLIENT_ID"                                              = azurerm_user_assigned_identity.msi.client_id
         "AZURE_TENANT_ID"                                            = azurerm_user_assigned_identity.msi.tenant_id
-        "STORAGE_QUEUE_NAME"                                         = azurerm_storage_queue.queue.name
-        "STORAGE_CONTAINER_NAME"                                     = azurerm_storage_container.container.name
+        "STORAGE_QUEUE_NAME"                                         = var.storage_queue_name
+        "STORAGE_CONTAINER_NAME"                                     = var.storage_container_name
         "LOGIC_APP_URL"                                              = azurerm_logic_app_trigger_http_request.logic_app_trigger.callback_url
         "KEY_VAULT_NAME"                                             = azurerm_key_vault.kv.name
-        "STORAGE_TABLE_NAME"                                         = azurerm_storage_table.table.name
+        "STORAGE_TABLE_NAME"                                         = var.storage_table_name
     }
 }
