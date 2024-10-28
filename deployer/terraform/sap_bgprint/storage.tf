@@ -19,6 +19,7 @@ resource "azurerm_storage_account" "storage_account" {
     }
     cross_tenant_replication_enabled = false
     depends_on                  = [ azurerm_subnet.subnet ]
+    public_network_access_enabled = false
 }
 
 # Import the existing storage container

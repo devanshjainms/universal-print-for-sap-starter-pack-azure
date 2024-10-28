@@ -103,6 +103,7 @@ resource "azurerm_key_vault" "kv" {
     purge_protection_enabled    = false
     tenant_id                   = azurerm_user_assigned_identity.msi.tenant_id
     sku_name                    = "standard"
+    public_network_access_enabled = false
     access_policy {
         tenant_id               = azurerm_user_assigned_identity.msi.tenant_id
         object_id               = azurerm_user_assigned_identity.msi.principal_id
